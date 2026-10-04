@@ -66,6 +66,90 @@ def check_widths(blocks):
         raise BuildError(f"{len(bad)} line(s) too wide")
 
 
+
+TARGET_WORDS = 8          # what a hand comfortably fits on one ruled line
+
+
+def reflow(blocks):
+    """Join hand-broken lines back into sentences, then wrap to 8 words.
+
+    The source keeps prose as short fragments, which left punctuation
+    stranded mid-line and the right margin unused. Here consecutive fragments
+    of the same kind are rejoined wherever the earlier one does not end a
+    sentence, and the result is re-wrapped to TARGET_WORDS, bounded by the
+    writing width.
+    """
+    WRAPPABLE = ("ln", "ind", "ind2", "quote")
+    ENDS = (".", ":", ";", "?", "!")
+
+    # A fragment that opens a list item, a labelled step or an all-caps
+    # heading must stay on its own line; everything else is flowing prose and
+    # can be rejoined into a paragraph.
+    STARTS = re.compile(
+        r"^(\d+\.\s|\([a-z]\)\s|L\d\b|C\d\b|ROUND\b|Scan\b|[A-Z][A-Z][A-Z -]*$)")
+
+    # 1. rejoin
+    merged, i = [], 0
+    while i < len(blocks):
+        b = blocks[i]
+        if b[0] not in WRAPPABLE:
+            merged.append(b)
+            i += 1
+            continue
+        kind, text = b[0], b[1]
+        j = i + 1
+        while j < len(blocks) and blocks[j][0] == kind:
+            nxt = blocks[j][1].lstrip()
+            if STARTS.match(nxt):
+                break
+            text = text.rstrip() + " " + nxt
+            j += 1
+        merged.append((kind, text))
+        i = j
+
+    # 2. re-wrap
+    out = []
+    for b in merged:
+        if b[0] not in WRAPPABLE:
+            out.append(b)
+            continue
+        kind, text = b
+        budget = HARD_CHARS - INDENT_COST.get(kind, 0)
+        # keep a parenthesised group whole, so O(n log n) never breaks across
+        # two lines and strands a bracket
+        protected = re.sub(r"\(([^()]*)\)",
+                           lambda m: "(" + m.group(1).replace(" ", "\x00") + ")", text)
+        words, line = protected.split(), ""
+        for w in words:
+            cand = w if not line else line + " " + w
+            too_long = len(cand.replace("\x00", " ")) > budget
+            too_many = len(cand.replace("\x00", " ").split()) > TARGET_WORDS
+            if line and (too_long or too_many):
+                out.append((kind, line.replace("\x00", " ")))
+                line = w
+            else:
+                line = cand
+        if line:
+            out.append((kind, line.replace("\x00", " ")))
+
+    # never leave a one- or two-letter word stranded at the end of a line:
+    # carry it down to join the word it belongs with
+    SHORT = re.compile(r"\s+([A-Za-z]{1,2})$")
+    for i in range(len(out) - 1):
+        a, bnext = out[i], out[i + 1]
+        if a[0] not in WRAPPABLE or bnext[0] != a[0]:
+            continue
+        m = SHORT.search(a[1])
+        if not m:
+            continue
+        budget = HARD_CHARS - INDENT_COST.get(bnext[0], 0)
+        moved = m.group(1) + " " + bnext[1]
+        if len(moved) <= budget and len(moved.split()) <= TARGET_WORDS + 1:
+            out[i] = (a[0], a[1][: m.start()])
+            out[i + 1] = (bnext[0], moved)
+    return out
+
+
 def paginate(blocks, per_sheet=LINES_PER_SHEET):
     """One problem per group, each group spread evenly over its sheets."""
     groups, cur = [], []
@@ -232,7 +316,7 @@ def page(path, title, body, navhtml, script="", sheets=0):
 
 
 def main():
-    blocks = content.BLOCKS
+    blocks = reflow(content.BLOCKS)
     check_widths(blocks)
     sheets = paginate(blocks)
     for n, sh in enumerate(sheets, 1):

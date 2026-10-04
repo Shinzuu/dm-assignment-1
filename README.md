@@ -4,7 +4,7 @@ Course work for **CSE 4333 Data Mining**, Premier University Chittagong.
 Three pages: a welcome that routes you to either half, then:
 
 **Part A** — the eight assigned textbook problems, worked out and paginated
-into 18 F4 answer sheets at 32 ruled lines each, so they can be copied by hand
+into 17 F4 answer sheets at 32 ruled lines each, so they can be copied by hand
 one line at a time. Submission is physical copies to the Section Office.
 
 **Part B** — revision for the final, weighted by what the lecturer flagged in

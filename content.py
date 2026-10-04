@@ -200,7 +200,7 @@ BLOCKS = [
 
     # ===================== 4.6 (a) =====================
     ("q", "Problem 4.6 (a)"),
-    ("quote", "Five transactions. min_sup = 60% and"),
+    ("quote", "Five transactions, with min_sup = 60% and"),
     ("quote", "min_conf = 80%. Find all frequent itemsets"),
     ("quote", "using Apriori and FP-growth, and compare"),
     ("quote", "the efficiency of the two."),
@@ -291,8 +291,8 @@ BLOCKS = [
     ("q", "Problem 6.7"),
     ("quote", "Generalised training data from an employee"),
     ("quote", "database. count is the number of tuples"),
-    ("quote", "with those values. status is the class"),
-    ("quote", "label."),
+    ("quote", "with those values. The class label is"),
+    ("quote", "status."),
     ("blank",),
     ("table",
      ["dept", "status", "age", "salary", "n"],
@@ -554,7 +554,7 @@ BLOCKS = [
     ("ind2", "it labels outliers as noise."),
     ("ind", "Input: Eps, the radius, and MinPts,"),
     ("ind2", "the least neighbours for a core"),
-    ("ind2", "point. k is NOT required."),
+    ("ind2", "point. Note that k is not required."),
     ("ind", "Limits: one global Eps and MinPts"),
     ("ind2", "cannot suit clusters of widely"),
     ("ind2", "different density; the result is"),
