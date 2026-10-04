@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="The exam is Wednesday 7 October. Part B is the revision half — start there. Part A holds the eight assignment solutions as F4 sheets to copy by hand for the 28 October submission.">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>&#9999;</text></svg>">
+<title>Part B — DM revision for the final</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FCFBF7; --rule:#BFD0E0; --margin:#A8453F;
+    --ink:#15203A; --pencil:#6A7794;
+    --ground:#E8E6E0;
+    --chrome:#1A1F2B; --chrome-ink:#E7EBF2; --chrome-dim:#9AA5B8;
+    --line:#D6D9E0;
+    --sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+    --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--ground);color:var(--ink);
+       font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:#8C3A35}
+
+  .nav{position:sticky;top:0;z-index:30;background:var(--chrome);color:var(--chrome-ink)}
+  .nav .in{max-width:64rem;margin:0 auto;display:flex;align-items:center;gap:.4rem;
+           padding:.5rem 1.1rem;flex-wrap:wrap}
+  .nav .home{font:600 .86rem/1 var(--sans);color:var(--chrome-ink);text-decoration:none;
+             padding:.45rem .6rem;border-radius:5px;margin-right:.3rem}
+  .nav .home:hover{background:#262C3A}
+  .nav a.tab{font:500 .85rem/1 var(--sans);color:var(--chrome-dim);text-decoration:none;
+             padding:.45rem .7rem;border-radius:5px;border:1px solid transparent}
+  .nav a.tab:hover{color:var(--chrome-ink);background:#262C3A}
+  .nav a.tab[aria-current="page"]{color:#fff;background:#2C3344;border-color:var(--margin)}
+  .nav .sp{flex:1}
+  .nav .meta{font:500 .74rem/1 var(--mono);color:var(--chrome-dim)}
+  .nav button{font:500 .8rem/1 var(--sans);background:#262C3A;color:var(--chrome-ink);
+              border:1px solid #39404F;border-radius:5px;padding:.42rem .6rem;cursor:pointer}
+  .nav button:hover{border-color:var(--margin)}
+  .nav button[aria-pressed="true"]{background:#36405A;border-color:var(--margin)}
+  .nav .pct{font:500 .76rem/1 var(--mono);color:var(--chrome-dim);min-width:3.1rem;text-align:center}
+  .nav a:focus-visible,.nav button:focus-visible{outline:2px solid #E8A9A4;outline-offset:2px}
+  @media (max-width:620px){ .nav .meta{display:none} }
+
+  .head{max-width:64rem;margin:0 auto;padding:2.2rem 1.25rem 1rem}
+  .head h1{font:600 clamp(1.45rem,4.2vw,2.1rem)/1.15 var(--serif);margin:0 0 .4rem}
+  .head .course{font:500 .8rem/1 var(--mono);color:#6A7080;margin:0 0 1rem}
+  .head p{max-width:60ch;margin:.5rem 0;color:#333A48}
+  .dates{display:flex;flex-wrap:wrap;gap:0 2.4rem;margin:1.3rem 0 0;padding:.9rem 0 0;
+         border-top:1px solid var(--line)}
+  .dates div{min-width:13rem}
+  .dates dt{font:500 .72rem/1.6 var(--mono);color:#6A7080}
+  .dates dd{margin:0;font:600 1.02rem/1.35 var(--sans)}
+  .dates dd em{font:400 .8rem/1.35 var(--sans);color:#6A7080;font-style:normal;display:block}
+
+  .pick{max-width:64rem;margin:0 auto;padding:1.4rem 1.25rem 4rem;
+        display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1.1rem}
+  .pick a{display:block;text-decoration:none;color:var(--ink);background:var(--paper);
+          border:1px solid var(--line);border-left:4px solid var(--margin);
+          padding:1.3rem 1.4rem 1.5rem;box-shadow:0 1px 2px rgba(0,0,0,.09)}
+  .pick a:hover{border-left-color:#7E2F2B;box-shadow:0 3px 14px rgba(0,0,0,.14)}
+  .pick h2{font:600 1.2rem/1.25 var(--serif);margin:0 0 .35rem}
+  .pick .when{font:500 .74rem/1 var(--mono);color:var(--margin);margin:0 0 .7rem}
+  .pick p{margin:.4rem 0 0;font-size:.93rem;color:#444B5A}
+  .pick ul{margin:.7rem 0 0;padding-left:1.1rem;font-size:.9rem;color:#4A5160}
+  .pick li{margin:.22rem 0}
+
+  .sheets{padding:1rem 0 4rem;overflow-x:auto;overscroll-behavior-x:contain}
+  .sheetwrap{display:flex;flex-direction:column;align-items:center;gap:2rem;
+             padding:0 1rem;width:max-content;min-width:100%;margin-inline:auto}
+  .sheet{
+    --pitch:1.4173em; --top:3.4646em; --marg:3.4646em; --right:1.8898em;
+    --rule-shift:0.448em;
+    position:relative;width:33.07em;height:51.97em;
+    font-size:calc(var(--base,clamp(7.4px,2.08vw,22.5px)) * var(--zoom,1));
+    background:var(--paper);color:var(--ink);
+    box-shadow:0 1px 2px rgba(0,0,0,.18),0 10px 28px rgba(0,0,0,.14);
+    overflow:hidden;
+  }
+  .sheet::before{content:"";position:absolute;left:0;right:0;
+    top:calc(var(--top) - var(--rule-shift));height:calc(32 * var(--pitch));
+    background:repeating-linear-gradient(to bottom,transparent 0,
+      transparent calc(var(--pitch) - 1px),var(--rule) calc(var(--pitch) - 1px),
+      var(--rule) var(--pitch));}
+  .sheet::after{content:"";position:absolute;top:0;bottom:0;left:var(--marg);
+    width:1px;background:var(--margin);opacity:.78}
+  .sheet .body{position:absolute;top:var(--top);
+    left:calc(var(--marg) + 1.1024em);right:var(--right);font-size:1em}
+  .sheet .body > *{margin:0;line-height:var(--pitch);font-size:1em}
+  .sheet .blank{height:var(--pitch)}
+  .sheet .q,.sheet .h{font-weight:600}
+  .sheet .quote{font-family:var(--serif);color:#2B3550}
+  .sheet .math{font-family:var(--mono);font-size:.94em}
+  .sheet .indent{padding-left:1.6em}
+  .sheet .indent2{padding-left:3.2em}
+  /* a near-full line is stretched to the margin so the writing fills the
+     width the way a hand fills a ruled page; short lines stay ragged */
+  .sheet .j{text-align:justify;text-align-last:justify;-moz-text-align-last:justify}
+
+  .sheet table{border-collapse:collapse;width:100%;font-size:.88em;table-layout:auto}
+  .sheet table td,.sheet table th{
+    height:calc(var(--pitch) - 1px);line-height:calc(var(--pitch) - 1px);
+    padding:0 .45em;border:1px solid #9FB3C8;text-align:left;font-weight:400;
+    vertical-align:middle;white-space:nowrap;overflow:hidden}
+  .sheet table th{font-weight:600;background:#EFF3F7}
+  .sheet table td.n,.sheet table th.n{text-align:right;font-family:var(--mono)}
+
+  .sheet svg.dg{display:block;width:100%;height:100%}
+  .sheet svg.dg text{font-family:var(--sans);fill:var(--ink)}
+
+  .sheet .folio{position:absolute;right:var(--right);bottom:1.5748em;
+    font:500 .86em/1 var(--mono);color:var(--pencil)}
+  .sheet .sheetq{position:absolute;left:calc(var(--marg) + 1.1024em);bottom:1.5748em;
+    font:500 .86em/1 var(--mono);color:var(--pencil)}
+
+  .guide{max-width:52rem;margin:1.2rem auto 4rem;padding:2.4rem 2.6rem 3rem;
+         background:var(--paper);border:1px solid var(--line);
+         box-shadow:0 1px 2px rgba(0,0,0,.1),0 10px 28px rgba(0,0,0,.1)}
+  .guide h3{font:600 1.18rem/1.3 var(--serif);margin:2.4rem 0 .7rem;padding-top:.9rem;
+            border-top:1px solid var(--line);scroll-margin-top:4.2rem}
+  .guide h3:first-child{border-top:0;padding-top:0;margin-top:0}
+  .guide p{margin:.7rem 0;max-width:66ch;color:#2C3444}
+  .guide .flag,.guide .warn{padding:.7rem .95rem;border-radius:0 3px 3px 0;margin:1rem 0;max-width:66ch}
+  .guide .flag{background:#FBF0EE;border-left:3px solid var(--margin);color:#4A2320}
+  .guide .warn{background:#FCF6E3;border-left:3px solid #B58A15;color:#4A3B10}
+  .guide .fml{font:500 .95rem/1.7 var(--mono);background:#F1F4F8;color:#1C2740;
+              padding:.55rem .85rem;border-radius:3px;margin:.55rem 0;overflow-x:auto}
+  .guide .work{margin:1.1rem 0;border:1px solid #CBD5E1;border-radius:3px;overflow:hidden}
+  .guide .work figcaption{font:600 .78rem/1 var(--sans);padding:.6rem .9rem;
+                          background:#EDF1F6;color:#1C2740;border-bottom:1px solid #CBD5E1}
+  .guide .work pre{margin:0;padding:.85rem .9rem;overflow-x:auto;background:#F8FAFC;
+                   font:400 .87rem/1.65 var(--mono);color:#1C2740;white-space:pre}
+  .guide .tw{overflow-x:auto;margin:1.1rem 0}
+  .guide table{border-collapse:collapse;width:100%;font-size:.91rem;min-width:28rem}
+  .guide th,.guide td{border:1px solid #CBD5E1;padding:.48rem .66rem;text-align:left;vertical-align:top}
+  .guide th{background:#EDF1F6;font-weight:600;color:#1C2740}
+  .guide td{color:#2C3444}
+  .guide tbody tr:nth-child(even) td{background:#F6F8FB}
+  .toc{display:flex;flex-wrap:wrap;gap:.35rem .45rem;margin:1.1rem 0 0}
+  .toc a{font:500 .76rem/1 var(--mono);color:#51586A;text-decoration:none;
+         border:1px solid var(--line);border-radius:3px;padding:.33rem .48rem;background:var(--paper)}
+  .toc a:hover{color:var(--ink);border-color:var(--margin)}
+  @media (max-width:620px){ .guide{padding:1.5rem 1.15rem 2rem;margin-inline:.6rem}
+                            .guide table{min-width:22rem;font-size:.85rem} }
+
+  footer{max-width:64rem;margin:0 auto;padding:2rem 1.25rem 4rem;
+         border-top:1px solid var(--line);color:#6A7080;font-size:.85rem}
+  footer p{margin:.35rem 0;max-width:64ch}
+
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+  @media print{
+    body{background:#fff}
+    .nav,.head,.pick,footer{display:none!important}
+    .sheets{padding:0;overflow:visible}
+    .sheetwrap{gap:0;padding:0;width:auto}
+    .sheet{font-size:6.35mm;width:210mm;height:330mm;box-shadow:none;
+           page-break-after:always;break-after:page}
+    .guide{box-shadow:none;border:0;max-width:none;padding:0;margin:0}
+    @page{margin:12mm}
+  }
+</style>
+</head>
+<body>
+<nav class="nav"><div class="in"><a class="home" href="index.html">DM Assignment-1</a><a class="tab" href="part-a.html">Part A &middot; Assignment</a><a class="tab" href="part-b.html" aria-current="page">Part B &middot; Revision</a><span class="sp"></span></div></nav>
+<div class="head"><h1>Part B &mdash; revision for the final</h1><p class="course">CSE 4333 · Han, Pei &amp; Tong 4th ed. · Chapters 3, 4, 6, 8</p><p>He said every exam question will be “common” — the same patterns as class and the slides, sometimes with different numbers. So this half drills the patterns on fresh numbers. Items he named aloud are flagged.</p><nav class="toc"><a href="#heard">What he said on 3 October</a><a href="#hopkins">Hopkins statistic</a><a href="#silhouette">Silhouette coefficient</a><a href="#numclusters">How many clusters</a><a href="#quality">Measuring clustering quality</a><a href="#distmatrix">Distance matrices</a><a href="#hier">Hierarchical clustering</a><a href="#partition">k-means and k-medoids</a><a href="#patterns">Pattern mining</a><a href="#classify">Classification</a><a href="#warehouse">Warehousing and OLAP</a><a href="#traps">Traps</a></nav></div><div class="guide"><h3 id="heard">What he said on 3 October</h3><p>From the recording of the last class. Timestamps are in the audio file.</p><div class="tw"><table><thead><tr><th></th><th>What he said</th></tr></thead><tbody><tr><td>Syllabus</td><td>Chapters 3, 4, 6 and 8. “Nothing can be skipped” from the slides.</td></tr><tr><td>Format</td><td>Exactly one question set from each of the four chapters.</td></tr><tr><td>Questions</td><td>All will be common. Some numerical problems may carry different values, but the patterns match what was discussed.</td></tr><tr><td>Cut</td><td>Nearest-neighbour / single-linkage clustering is out — he did not teach it.</td></tr><tr><td>Assignment</td><td>Due 28 October, 1–2 days' grace, physical copies to the Section Office.</td></tr><tr><td>Exam</td><td>Wednesday 7 October, 2:00–5:00 PM. Three hours.</td></tr></tbody></table></div><p class="flag">Named for the exam: the Silhouette Coefficient (“পরীক্ষার জন্য পড়তে হবে”), the Hopkins statistic with textbook Example 8.9, and the distance matrix from Chapter 2.</p><h3 id="hopkins">Hopkins statistic</h3><p>Tests whether the data has any cluster structure at all, or is just uniformly spread. He told the class to read it, and to read Example 8.9.</p><p class="fml">H = Σ xᵢᵈ / ( Σ xᵢᵈ + Σ yᵢᵈ )</p><div class="tw"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td>xᵢ</td><td>Sample n points from the data SPACE. xᵢ is the distance from pᵢ to its nearest neighbour in D.</td></tr><tr><td>yᵢ</td><td>Sample n points from D itself. yᵢ is the distance from qᵢ to its nearest neighbour in D − {qᵢ}.</td></tr><tr><td>d</td><td>The dimensionality of D.</td></tr></tbody></table></div><p class="warn">Getting x and y the wrong way round inverts the answer. x starts from random points in the space; y starts from real points in the data.</p><p>If D is uniform, the two sums are close and H ≈ 0.5. If D is clustered, real points sit closer to each other than random points do, so Σxᵈ is much larger and H approaches 1.</p><figure class="work"><figcaption>Example 8.9, worked</figcaption><pre>D = {0.9, 1, 1.3, 1.4, 1.5, 1.8, 2, 2.1, 4.1,
+     7, 7.4, 7.5, 7.7, 7.8, 7.9, 8.1} in [0, 10].  d = 1
+Sampled from D:      1.3, 1.8, 7.5, 7.9
+Sampled from space:  1.9, 4, 6, 8
+
+Σx = |1.9−2| + |4−4.1| + |6−7| + |8−8.1|
+   = 0.1 + 0.1 + 1.0 + 0.1  = 1.3
+Σy = |1.3−1.4| + |1.8−2| + |7.5−7.4| + |7.9−7.8|
+   = 0.1 + 0.2 + 0.1 + 0.1  = 0.5
+
+H = 1.3 / (1.3 + 0.5) = 1.3 / 1.8 = 0.72</pre></figure><p>0.72 is well above 0.5, so D has a strong clustering tendency — and indeed it has two clusters, one near 1.5 and one near 7.8.</p><h3 id="silhouette">Silhouette coefficient</h3><p class="flag">He worked this on the board and said outright it must be studied for the exam. Expect it with different numbers.</p><p class="fml">a(o) = Σ dist(o, o′) / ( |Cᵢ| − 1 )   for o′ ∈ Cᵢ, o′ ≠ o</p><p class="fml">b(o) = min over Cⱼ ≠ Cᵢ of [ Σ dist(o, o′) / |Cⱼ| ]</p><p class="fml">s(o) = ( b(o) − a(o) ) / max{ a(o), b(o) }</p><div class="tw"><table><thead><tr><th>Detail</th><th>Why it catches people</th></tr></thead><tbody><tr><td>a(o) divides by |Cᵢ| − 1</td><td>o is not its own neighbour. With 3 points in the cluster you divide by 2, not 3.</td></tr><tr><td>b(o) is a minimum</td><td>Average the distance to EACH other cluster separately, then take the smallest. With only two clusters the min is trivial, which is why the class example hid this step.</td></tr><tr><td>Range is −1 to 1</td><td>Near 1 is compact and well separated. Negative means o is closer to another cluster than its own — a bad assignment.</td></tr></tbody></table></div><figure class="work"><figcaption>Fresh practice — three clusters, so the min matters</figcaption><pre>C₁ = {a, b, c}   C₂ = {d, e}   C₃ = {f, g}   target o = a
+d(a,b)=2  d(a,c)=4
+d(a,d)=7  d(a,e)=9     d(a,f)=12  d(a,g)=14
+
+a(a) = (2 + 4) / (3 − 1) = 6/2 = 3
+to C₂: (7 + 9)/2  = 8
+to C₃: (12 + 14)/2 = 13
+b(a) = min(8, 13) = 8
+
+s(a) = (8 − 3) / max(3, 8) = 5/8 = 0.625</pre></figure><p>0.625 is comfortably positive, so a sits well inside its own cluster. Average s(o) over a cluster to score that cluster; average over the whole data set to score the clustering.</p><h3 id="numclusters">How many clusters</h3><div class="tw"><table><thead><tr><th>Method</th><th>How it works</th></tr></thead><tbody><tr><td>Empirical rule</td><td>k ≈ √(n/2) for n points, which leaves about √(2n) points per cluster.</td></tr><tr><td>Elbow method</td><td>Plot within-cluster variance against k. It always falls as k rises, so take the k where the marginal gain drops off — the bend.</td></tr><tr><td>Calinski-Harabasz</td><td>An index that estimates k for k-means directly.</td></tr><tr><td>Cross-validation</td><td>Split the data, cluster one part, measure how well the resulting centres fit the held-out part, repeat over k.</td></tr></tbody></table></div><figure class="work"><figcaption>The empirical rule, as he worked it</figcaption><pre>n = 20 points
+k ≈ √(20 / 2) = √10 = 3.16  →  k = 3
+and each cluster then holds about √(2·20) = 6.3 points</pre></figure><h3 id="quality">Measuring clustering quality</h3><div class="tw"><table><thead><tr><th></th><th>Extrinsic</th><th>Intrinsic</th></tr></thead><tbody><tr><td>Needs ground truth?</td><td>Yes — supervised</td><td>No — unsupervised</td></tr><tr><td>Question asked</td><td>How well does the clustering match the known labels?</td><td>How compact and how separated are the clusters?</td></tr><tr><td>Examples</td><td>Purity, BCubed precision and recall, normalised mutual information</td><td>Silhouette coefficient, Dunn index</td></tr></tbody></table></div><p>Dunn uses extreme distances so outliers distort it; silhouette averages, which is why it is the more commonly used of the two.</p><h3 id="distmatrix">Distance matrices</h3><p class="flag">Chapter 2 material, but he told the class to revise it because hierarchical clustering is driven entirely by the distance matrix.</p><p class="fml">Euclidean:  d(i,j) = √( Σ (xᵢₖ − xⱼₖ)² )</p><p class="fml">Manhattan:  d(i,j) = Σ | xᵢₖ − xⱼₖ |</p><p class="fml">Minkowski:  d(i,j) = ( Σ | xᵢₖ − xⱼₖ |ᵖ )^(1/p)</p><p>p = 1 gives Manhattan, p = 2 gives Euclidean. The matrix is symmetric with a zero diagonal, so only the lower triangle is ever written out.</p><h3 id="hier">Hierarchical clustering</h3><p class="warn">Single linkage (nearest neighbour) is OUT of the syllabus — he said he could not teach it. Complete and average linkage are in.</p><div class="tw"><table><thead><tr><th></th><th>AGNES</th><th>DIANA</th></tr></thead><tbody><tr><td>Direction</td><td>Agglomerative, bottom-up</td><td>Divisive, top-down</td></tr><tr><td>Start</td><td>Every object its own cluster</td><td>All objects in one cluster</td></tr><tr><td>Each step</td><td>Merge the two closest clusters</td><td>Split the least cohesive cluster</td></tr><tr><td>Stop</td><td>One cluster remains</td><td>Every object is alone</td></tr></tbody></table></div><div class="tw"><table><thead><tr><th>Linkage</th><th>Distance between clusters Cᵢ and Cⱼ</th></tr></thead><tbody><tr><td>Complete</td><td>The MAXIMUM distance between any point of Cᵢ and any point of Cⱼ. Gives compact, similar-sized clusters; sensitive to outliers.</td></tr><tr><td>Average</td><td>The MEAN over all such pairs. A compromise between the extremes, and more robust.</td></tr><tr><td>Centroid</td><td>The distance between the two cluster centroids.</td></tr></tbody></table></div><p>Neither AGNES nor DIANA can undo a merge or a split, which is why a single bad early step propagates all the way to the root.</p><h3 id="partition">k-means and k-medoids</h3><figure class="work"><figcaption>k-means on fresh points</figcaption><pre>Points (1,1) (2,1) (4,3) (5,4),  k = 2
+Initial centres (1,1) and (5,4)
+
+Round 1
+  (1,1): 0    vs 5.00   → C₁
+  (2,1): 1.00 vs 4.24   → C₁
+  (4,3): 3.61 vs 1.41   → C₂
+  (5,4): 5.00 vs 0      → C₂
+  new centres (1.5, 1) and (4.5, 3.5)
+
+Round 2 moves nothing, so it has converged.</pre></figure><div class="tw"><table><thead><tr><th></th><th>k-means</th><th>k-medoids (PAM)</th></tr></thead><tbody><tr><td>Centre is</td><td>The mean — a computed point that need not exist in the data</td><td>A medoid — an actual object of the data set</td></tr><tr><td>Minimises</td><td>Sum of squared error</td><td>Sum of absolute dissimilarity</td></tr><tr><td>Outliers</td><td>Drag the mean, so sensitive</td><td>Far more robust</td></tr><tr><td>Cost per iteration</td><td>O(nkt)</td><td>O(k(n−k)²) — does not scale</td></tr></tbody></table></div><p>PAM replaces a medoid with a non-medoid when doing so lowers the total cost. The swap cost is the change in the sum of distances from every object to its nearest representative; swap when that change is negative.</p><h3 id="patterns">Pattern mining</h3><p class="fml">support(A ⇒ B) = P(A ∪ B)</p><p class="fml">confidence(A ⇒ B) = P(B | A) = support(A ∪ B) / support(A)</p><p class="fml">lift(A, B) = confidence(A ⇒ B) / support(B)</p><figure class="work"><figcaption>Lift on fresh numbers</figcaption><pre>1000 transactions. A in 400, B in 500, both in 250.
+
+support(A∪B) = 250/1000 = 0.25
+confidence(A⇒B) = 250/400 = 0.625
+lift = 0.625 / 0.50 = 1.25</pre></figure><p>Lift above 1 means A and B occur together more than chance, so they are positively correlated. Exactly 1 means independent; below 1 means one discourages the other. Confidence alone would have called this a strong rule without telling you B is common anyway.</p><figure class="work"><figcaption>Apriori on fresh transactions</figcaption><pre>T1{a,b,c}  T2{a,b}  T3{a,c,d}  T4{b,c}
+min_sup = 50%, so the minimum count is 2.
+
+L₁: a:3  b:3  c:3      (d:1 is dropped)
+C₂: ab:2  ac:2  bc:2   → all frequent, L₂
+C₃: abc appears in T1 only, count 1 → not frequent
+
+confidence(a⇒b) = 2/3 = 0.67</pre></figure><div class="tw"><table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody><tr><td>Apriori property</td><td>Every non-empty subset of a frequent itemset is itself frequent. Equivalently, if an itemset is infrequent none of its supersets can be frequent — which is what lets you prune.</td></tr><tr><td>Closed itemset</td><td>Frequent, and no superset has the SAME support.</td></tr><tr><td>Maximal itemset</td><td>Frequent, and no superset is frequent at all.</td></tr><tr><td>Relationship</td><td>Every maximal itemset is closed. Closed itemsets keep the support counts; maximal ones lose them but are fewer.</td></tr></tbody></table></div><h3 id="classify">Classification</h3><p class="fml">Info(D) = − Σ pᵢ log₂ pᵢ</p><p class="fml">Gain(A) = Info(D) − Info_A(D)</p><p class="fml">GainRatio(A) = Gain(A) / SplitInfo(A)</p><p class="fml">Gini(D) = 1 − Σ pᵢ²</p><figure class="work"><figcaption>All three measures on one fresh split</figcaption><pre>D has 10 tuples: 6 yes, 4 no.
+Attribute A splits D into
+  D₁ = 6 tuples (4 yes, 2 no)
+  D₂ = 4 tuples (2 yes, 2 no)
+
+Info(D)  = −0.6log₂0.6 − 0.4log₂0.4 = 0.9710
+Info(D₁) = 0.9183     Info(D₂) = 1.0000
+Info_A(D) = 0.6(0.9183) + 0.4(1.0) = 0.9510
+Gain(A)   = 0.9710 − 0.9510 = 0.0200
+
+SplitInfo(A) = −0.6log₂0.6 − 0.4log₂0.4 = 0.9710
+GainRatio(A) = 0.0200 / 0.9710 = 0.0206
+
+Gini(D)  = 1 − (0.6² + 0.4²) = 0.4800
+Gini(D₁) = 1 − ((4/6)²+(2/6)²) = 0.4444
+Gini(D₂) = 1 − (0.5² + 0.5²)   = 0.5000
+Gini_A(D) = 0.6(0.4444) + 0.4(0.5) = 0.4667
+ΔGini(A)  = 0.4800 − 0.4667 = 0.0133</pre></figure><p>Information gain favours attributes with many distinct values; gain ratio divides that bias out with SplitInfo. Gini needs no logarithms, which is why CART uses it, and it always splits binary.</p><p class="fml">P(Cᵢ | X) ∝ P(X | Cᵢ) P(Cᵢ) = P(Cᵢ) Π P(xₖ | Cᵢ)</p><p>Naive Bayes assumes the attributes are conditionally independent given the class. If one conditional probability is zero the whole product is zero, so apply the Laplacian correction: add 1 to every count, and add the number of distinct values to each denominator.</p><div class="tw"><table><thead><tr><th>Measure</th><th>Formula</th></tr></thead><tbody><tr><td>Accuracy</td><td>(TP + TN) / (TP + TN + FP + FN)</td></tr><tr><td>Precision</td><td>TP / (TP + FP)</td></tr><tr><td>Recall, sensitivity</td><td>TP / (TP + FN)</td></tr><tr><td>Specificity</td><td>TN / (TN + FP)</td></tr><tr><td>F₁</td><td>2 · precision · recall / (precision + recall)</td></tr></tbody></table></div><figure class="work"><figcaption>Confusion matrix on fresh counts</figcaption><pre>TP = 90   FN = 10   FP = 30   TN = 870
+
+accuracy    = 960/1000 = 0.960
+precision   =  90/120  = 0.750
+recall      =  90/100  = 0.900
+specificity = 870/900  = 0.967
+F₁ = 2(0.75)(0.90)/(0.75+0.90) = 0.818</pre></figure><p>Accuracy reads 96% while precision is only 75%, because the negative class is large. That gap is the whole argument for quoting precision and recall rather than accuracy on imbalanced data.</p><div class="tw"><table><thead><tr><th></th><th>Eager</th><th>Lazy</th></tr></thead><tbody><tr><td>Examples</td><td>Decision tree, Bayes, SVM</td><td>k-nearest neighbour</td></tr><tr><td>Training</td><td>Builds a model up front — slow</td><td>Stores the data — instant</td></tr><tr><td>Classifying</td><td>Fast</td><td>Slow: compares against the whole training set</td></tr><tr><td>Fits</td><td>One global model</td><td>Many local approximations</td></tr></tbody></table></div><p>kNN needs a value of k and a distance measure, and it needs the attributes normalised first, or whichever attribute has the largest numeric range will dominate the distance.</p><h3 id="warehouse">Warehousing and OLAP</h3><p class="fml">cuboids = Π Lᵢ   where Lᵢ is the level count of dimension i, counting all</p><figure class="work"><figcaption>Cuboid counting on fresh numbers</figcaption><pre>3 dimensions with 4, 3 and 2 levels (all included):
+  4 × 3 × 2 = 24 cuboids
+
+With no hierarchies at all, n dimensions give 2ⁿ:
+  5 dimensions → 2⁵ = 32 cuboids</pre></figure><div class="tw"><table><thead><tr><th>Operation</th><th>What it does</th></tr></thead><tbody><tr><td>Roll-up</td><td>Climb a hierarchy or drop a dimension, aggregating as you go.</td></tr><tr><td>Drill-down</td><td>The reverse — step down to finer detail.</td></tr><tr><td>Slice</td><td>Fix ONE dimension to a single value.</td></tr><tr><td>Dice</td><td>Fix two or more dimensions, or pick a sub-range of each.</td></tr><tr><td>Pivot</td><td>Rotate the axes to present the same cube differently.</td></tr></tbody></table></div><div class="tw"><table><thead><tr><th></th><th>OLTP</th><th>OLAP</th></tr></thead><tbody><tr><td>Purpose</td><td>Day-to-day operations</td><td>Decision support</td></tr><tr><td>Data</td><td>Current, detailed</td><td>Historical, summarised</td></tr><tr><td>Design</td><td>Normalised, ER</td><td>Star or snowflake</td></tr><tr><td>Access</td><td>Short reads and writes</td><td>Long, complex read-mostly queries</td></tr><tr><td>Unit of work</td><td>Short transactions</td><td>Complex queries over millions of rows</td></tr></tbody></table></div><div class="tw"><table><thead><tr><th>Server</th><th>Storage</th></tr></thead><tbody><tr><td>ROLAP</td><td>Relational tables. Scales to large data, slower queries.</td></tr><tr><td>MOLAP</td><td>A multidimensional array. Fast, but sparse cubes waste space.</td></tr><tr><td>HOLAP</td><td>Both — detail in relational tables, summaries in arrays.</td></tr></tbody></table></div><div class="tw"><table><thead><tr><th></th><th>Holds</th></tr></thead><tbody><tr><td>Data warehouse</td><td>Integrated, cleaned, schema-on-write. Built for analysis of known questions.</td></tr><tr><td>Data mart</td><td>A departmental subset of a warehouse.</td></tr><tr><td>Data lake</td><td>Raw data in its native format, schema-on-read. Flexible, but turns into a swamp without governance.</td></tr></tbody></table></div><h3 id="traps">Traps</h3><div class="tw"><table><thead><tr><th>Trap</th><th>The right answer</th></tr></thead><tbody><tr><td>Single linkage</td><td>Not on the syllabus. Do not spend revision time on it.</td></tr><tr><td>a(o) in silhouette</td><td>Divide by |Cᵢ| − 1, not |Cᵢ|.</td></tr><tr><td>b(o) in silhouette</td><td>The MINIMUM of the per-cluster averages, not the average over all other points.</td></tr><tr><td>Hopkins x and y</td><td>x from random space points, y from real data points. H near 1 means clustered, not uniform.</td></tr><tr><td>Rolling up an average</td><td>avg_grade is algebraic. Carry sum and count and divide at the end; never average the averages.</td></tr><tr><td>Cuboid count</td><td>Multiply the level counts. Use 2ⁿ only when there are no hierarchies.</td></tr><tr><td>Apriori pruning</td><td>Prune a candidate when ANY (k−1)-subset is infrequent.</td></tr><tr><td>Naive Bayes zero</td><td>One zero conditional kills the whole class. Say so, then apply Laplace.</td></tr><tr><td>Accuracy on skewed data</td><td>Quote precision, recall and F₁ as well; accuracy alone flatters the majority class.</td></tr></tbody></table></div></div>
+<footer>
+  <p>Worked from <em>Data Mining: Concepts and Techniques</em>, Han, Pei &amp; Tong, 4th edition (2022). Problem statements are quoted from the book; every numeric answer was computed independently and re-verified, not taken from a solution manual.</p>
+  <p>Rebuilt 2026-10-05.</p>
+</footer>
+
+</body>
+</html>

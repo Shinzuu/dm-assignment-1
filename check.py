@@ -25,10 +25,10 @@ PROBE = r"""
   const out = {fail: [], warn: [], stat: {}};
   const d = document.documentElement;
   const sheets = [...document.querySelectorAll('.sheet')];
-  if (!sheets.length) { out.fail.push('no sheets rendered'); return out; }
+  out.stat.page = location.pathname.split('/').pop();
 
-  const fs = parseFloat(getComputedStyle(sheets[0]).fontSize);
-  const pitch = fs * 1.4173;
+  const pitch = sheets.length
+    ? parseFloat(getComputedStyle(sheets[0]).fontSize) * 1.4173 : 0;
   out.stat.sheets = sheets.length;
   out.stat.pitch = +pitch.toFixed(2);
   out.stat.viewport = [window.innerWidth, window.innerHeight];
@@ -85,7 +85,7 @@ PROBE = r"""
   // Part B
   out.stat.guideSections = document.querySelectorAll('.guide h3').length;
   out.stat.workedBoxes = document.querySelectorAll('.guide .work').length;
-  if (!out.stat.guideSections) out.fail.push('Part B missing');
+
 
   // nothing anywhere may be wider than the viewport
   document.querySelectorAll('.masthead *, .part *, .guide > *, .zoombar *').forEach(el => {
@@ -100,8 +100,14 @@ PROBE = r"""
   });
 
   // zoom controls must exist and be wired
-  ['zoomIn', 'zoomOut', 'fitPage', 'fitWidth', 'zoomPct'].forEach(id => {
-    if (!document.getElementById(id)) out.fail.push(`missing control #${id}`);
+  if (sheets.length) {
+    ['zoomIn','zoomOut','fitPage','fitWidth','zoomPct'].forEach(id => {
+      if (!document.getElementById(id)) out.fail.push(`missing control #${id}`);
+    });
+  }
+  // the nav must link both parts from every page
+  ['part-a.html','part-b.html','index.html'].forEach(h => {
+    if (!document.querySelector(`.nav a[href="${h}"]`)) out.fail.push(`nav missing link to ${h}`);
   });
 
   return out;
@@ -109,14 +115,14 @@ PROBE = r"""
 """
 
 
-def probe(w, h):
+def probe(w, h, pagefile="part-a.html"):
     """Render index.html with the probe appended and read the JSON back.
 
     --dump-dom runs the page's JavaScript before dumping, so appending a
     script that writes its result into the DOM needs no debugging protocol
     and no third-party package.
     """
-    page = (HERE / "index.html").read_text()
+    page = (HERE / pagefile).read_text()
     injected = page.replace(
         "</body>",
         "<pre id=\"auditout\"></pre><script>setTimeout(function(){"
@@ -154,14 +160,16 @@ def html_unescape(s):
 
 def main():
     sizes = [(1280, 1000), (390, 844)]
+    pages = ["index.html", "part-a.html", "part-b.html"]
     if len(sys.argv) > 1:
         w, h = sys.argv[1].lower().split("x")
         sizes = [(int(w), int(h))]
 
     total = 0
     for w, h in sizes:
-        print(f"\n=== {w} x {h}")
-        r = probe(w, h)
+      for pg in pages:
+        print(f"\n=== {pg}  {w} x {h}")
+        r = probe(w, h, pg)
         st = r.get("stat", {})
         print(f"    sheets {st.get('sheets')}  pitch {st.get('pitch')}px  "
               f"Part B sections {st.get('guideSections')}  worked {st.get('workedBoxes')}")

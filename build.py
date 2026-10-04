@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-"""Paginate content.py into F4 sheets and emit index.html.
+"""Build three pages: a welcome, Part A (sheets), Part B (revision).
 
-The point of this script is that the handwriting constraint is enforced rather
-than hoped for. Two hard checks:
-
-  * no sheet carries more than LINES_PER_SHEET ruled lines;
-  * no text line is wider than the writing area, so nothing silently wraps
-    onto a second rule.
-
-Either failure aborts the build.
+The handwriting constraint is enforced, not hoped for. The build aborts if a
+line is wider than the writing area or a sheet exceeds its line budget.
 
     python3 build.py
 """
@@ -20,303 +14,322 @@ from datetime import date
 from pathlib import Path
 
 import content
+import diagrams
 
 HERE = Path(__file__).parent
 LINES_PER_SHEET = 32
 
-# Writing area is 176 mm wide at a 6.35 mm type size. IBM Plex Sans averages
-# about 0.52 em per character, so ~3.3 mm a character, so ~53 characters fit.
-# Stop well short of that: a hand needs slack and so does a wide glyph run.
+# Writing area is 176 mm at 6.35 mm type; IBM Plex Sans averages ~0.52 em a
+# character, so ~53 fit. Stop short of that, and justify anything past
+# JUSTIFY_CHARS so the writing reaches the right margin instead of trailing off.
 HARD_CHARS = 52
-WARN_CHARS = 46
+WARN_CHARS = 48
+JUSTIFY_CHARS = 43
 INDENT_COST = {"ind": 2, "ind2": 4}
+TEXT = ("q", "h", "ln", "ind", "ind2", "math", "quote")
 
 
 class BuildError(Exception):
     pass
 
 
-def line_cost(block):
-    """How many ruled lines this block occupies."""
-    kind = block[0]
-    if kind == "blank":
+def line_cost(b):
+    k = b[0]
+    if k == "blank" or k in TEXT:
         return 1
-    if kind in ("q", "h", "ln", "ind", "ind2", "math", "quote"):
-        return 1
-    if kind == "table":
-        _, headers, rows, _ = block
-        return 1 + len(rows)
-    if kind == "draw":
-        _, title, lines = block
-        return 1 + len(lines)
-    raise BuildError(f"unknown block kind: {kind!r}")
+    if k == "table":
+        return 1 + len(b[2])
+    if k == "svg":
+        return diagrams.REGISTRY[b[1]]()[0]
+    raise BuildError(f"unknown block {k!r}")
 
 
-def atomic(block):
-    """Blocks that must not be split across a sheet boundary."""
-    return block[0] in ("table", "draw")
+def atomic(b):
+    return b[0] in ("table", "svg")
 
 
 def check_widths(blocks):
-    """Refuse to build if any line would overflow its rule."""
-    problems, warnings = [], []
-    for i, block in enumerate(blocks):
-        kind = block[0]
-        texts = []
-        if kind in ("q", "h", "ln", "ind", "ind2", "math", "quote"):
-            texts = [(block[1], INDENT_COST.get(kind, 0))]
-        elif kind == "draw":
-            texts = [(block[1], 0)] + [(ln, 1) for ln in block[2]]
-        elif kind == "table":
-            continue  # table cells are sized by the browser, not by us
-        for text, indent in texts:
-            width = len(text) + indent
-            if width > HARD_CHARS:
-                problems.append((i, width, text))
-            elif width > WARN_CHARS:
-                warnings.append((i, width, text))
-    for i, w, t in warnings:
-        print(f"  note: block {i} is {w} chars (soft limit {WARN_CHARS}): {t[:48]}")
-    if problems:
-        for i, w, t in problems:
-            print(f"  OVERFLOW block {i}: {w} chars > {HARD_CHARS}: {t}", file=sys.stderr)
-        raise BuildError(f"{len(problems)} line(s) too wide for the sheet")
+    bad, warn = [], []
+    for i, b in enumerate(blocks):
+        if b[0] not in TEXT:
+            continue
+        w = len(b[1]) + INDENT_COST.get(b[0], 0)
+        if w > HARD_CHARS:
+            bad.append((i, w, b[1]))
+        elif w > WARN_CHARS:
+            warn.append((i, w, b[1]))
+    for i, w, t in warn:
+        print(f"  note: block {i} is {w} chars: {t[:46]}")
+    if bad:
+        for i, w, t in bad:
+            print(f"  OVERFLOW block {i}: {w} > {HARD_CHARS}: {t}", file=sys.stderr)
+        raise BuildError(f"{len(bad)} line(s) too wide")
 
 
 def paginate(blocks, per_sheet=LINES_PER_SHEET):
-    """One problem per group; balance each group over its sheets.
-
-    Greedy filling at 32 leaves orphan tails - a sheet holding two leftover
-    lines. Instead, work out how many sheets a problem needs, then spread it
-    evenly over exactly that many, so the last sheet is never nearly empty.
-    """
+    """One problem per group, each group spread evenly over its sheets."""
     groups, cur = [], []
-    for block in blocks:
-        if block[0] == "q" and cur:
+    for b in blocks:
+        if b[0] == "q" and cur:
             groups.append(cur)
             cur = []
-        cur.append(block)
+        cur.append(b)
     if cur:
         groups.append(cur)
 
-    sheets = []
-    for group in groups:
-        total = sum(line_cost(b) for b in group)
-        needed = max(1, -(-total // per_sheet))          # ceil
-        target = min(per_sheet, -(-total // needed))     # even split
+    MIN_ROOM = 9    # a new problem only opens a sheet if the page is nearly full
 
-        sheet, used = [], 0
-        for block in group:
-            cost = line_cost(block)
-            if cost > per_sheet:
-                raise BuildError(f"block {block[0]!r} needs {cost} lines, sheet holds {per_sheet}")
-            # overflow the balanced target only up to the real limit, and only
-            # when an atomic block would otherwise be stranded
-            limit = target if not atomic(block) else per_sheet
-            if sheet and used + cost > limit:
+    sheets, sheet, used = [], [], 0
+    for g in groups:
+        total = sum(line_cost(b) for b in g)
+        room = per_sheet - used
+        if sheet and room < MIN_ROOM:
+            while sheet and sheet[-1][0] == "blank":
+                sheet.pop()
+            sheets.append(sheet)
+            sheet, used = [], 0
+            room = per_sheet
+        # spread this problem over however many sheets it needs, counting the
+        # part-filled sheet it is starting on
+        for b in g:
+            c = line_cost(b)
+            if c > per_sheet:
+                raise BuildError(f"{b[0]!r} needs {c} lines, sheet holds {per_sheet}")
+            if sheet and used + c > per_sheet:
                 while sheet and sheet[-1][0] == "blank":
                     sheet.pop()
                     used -= 1
                 sheets.append(sheet)
                 sheet, used = [], 0
-            if not sheet and block[0] == "blank":
+            if not sheet and b[0] == "blank":
                 continue
-            sheet.append(block)
-            used += cost
-        if sheet:
-            while sheet and sheet[-1][0] == "blank":
-                sheet.pop()
-            sheets.append(sheet)
+            sheet.append(b)
+            used += c
+    if sheet:
+        while sheet and sheet[-1][0] == "blank":
+            sheet.pop()
+        sheets.append(sheet)
     return sheets
 
 
 def esc(s):
-    return html.escape(s, quote=False)
+    return html.escape(str(s), quote=False)
 
 
-def render_block(block):
-    kind = block[0]
-    if kind == "blank":
+def _p(cls, text, indent=0):
+    """A ruled line. Long ones justify out to the right margin."""
+    if len(text) + indent >= JUSTIFY_CHARS and not text.rstrip().endswith(":"):
+        cls += " j"
+    return f'<p class="{cls}">{esc(text)}</p>'
+
+
+def render(b):
+    k = b[0]
+    if k == "blank":
         return '<div class="blank"></div>'
-    if kind == "q":
-        return f'<p class="ln q">{esc(block[1])}</p>'
-    if kind == "h":
-        return f'<p class="ln h">{esc(block[1])}</p>'
-    if kind == "ln":
-        return f'<p class="ln">{esc(block[1])}</p>'
-    if kind == "ind":
-        return f'<p class="ln indent">{esc(block[1])}</p>'
-    if kind == "ind2":
-        return f'<p class="ln indent2">{esc(block[1])}</p>'
-    if kind == "math":
-        return f'<p class="ln math">{esc(block[1])}</p>'
-    if kind == "quote":
-        return f'<p class="ln quote">{esc(block[1])}</p>'
-    if kind == "draw":
-        _, title, lines = block
-        body = "".join(f"<span>{esc(l)}</span>" for l in lines)
-        inner = f"<b>{esc(title)}</b>" + "".join(
-            f'<p class="ln">{esc(l)}</p>' for l in lines
-        )
-        return f'<div class="draw">{inner}</div>'
-    if kind == "table":
-        _, headers, rows, aligns = block
-        th = "".join(
-            f'<th class="{"n" if a == "r" else ""}">{esc(h)}</th>'
-            for h, a in zip(headers, aligns)
-        )
-        trs = []
-        for row in rows:
-            tds = "".join(
-                f'<td class="{"n" if a == "r" else ""}">{esc(str(c))}</td>'
-                for c, a in zip(row, aligns)
-            )
-            trs.append(f"<tr>{tds}</tr>")
-        return f"<table><tr>{th}</tr>{''.join(trs)}</table>"
-    raise BuildError(f"cannot render {kind!r}")
+    if k == "q":
+        return _p("ln q", b[1])
+    if k == "h":
+        return _p("ln h", b[1])
+    if k == "ln":
+        return _p("ln", b[1])
+    if k == "ind":
+        return _p("ln indent", b[1], 2)
+    if k == "ind2":
+        return _p("ln indent2", b[1], 4)
+    if k == "math":
+        return f'<p class="ln math">{esc(b[1])}</p>'
+    if k == "quote":
+        return _p("ln quote", b[1])
+    if k == "svg":
+        lines, svg = diagrams.REGISTRY[b[1]]()
+        return f'<div style="height:calc({lines} * var(--pitch))">{svg}</div>'
+    if k == "table":
+        _, heads, rows, al = b
+        th = "".join(f'<th class="{"n" if a == "r" else ""}">{esc(h)}</th>'
+                     for h, a in zip(heads, al))
+        trs = "".join("<tr>" + "".join(
+            f'<td class="{"n" if a == "r" else ""}">{esc(c)}</td>'
+            for c, a in zip(r, al)) + "</tr>" for r in rows)
+        return f"<table><tr>{th}</tr>{trs}</table>"
+    raise BuildError(f"cannot render {k!r}")
 
 
-def question_of(sheet, fallback):
-    for block in sheet:
-        if block[0] == "q":
-            return block[1]
-    return fallback
+ZOOM_JS = """
+<script>
+(function(){
+  var sheets=document.querySelector('.sheets'); if(!sheets) return;
+  var pct=document.getElementById('zoomPct');
+  var EM=33.07, ASPECT=330/210, zoom=1, mode='page';
+  function base(){var p=document.querySelector('.sheet');
+    var z=parseFloat(getComputedStyle(sheets).getPropertyValue('--zoom'))||1;
+    return parseFloat(getComputedStyle(p).fontSize)/z;}
+  function clamp(z){return Math.min(4,Math.max(.35,z));}
+  function apply(){sheets.style.setProperty('--zoom',zoom.toFixed(3));
+    if(pct)pct.textContent=Math.round(zoom*100)+'%';
+    document.querySelectorAll('.nav button[data-mode]').forEach(function(b){
+      b.setAttribute('aria-pressed',String(b.dataset.mode===mode));});
+    try{localStorage.setItem('dm1-zoom',JSON.stringify({z:zoom,m:mode}));}catch(e){}}
+  function w(){return document.querySelector('.sheetwrap').clientWidth-32;}
+  function fitWidth(){mode='width';zoom=clamp(w()/(EM*base()));apply();}
+  function fitPage(){mode='page';var n=document.querySelector('.nav');
+    var h=window.innerHeight-(n?n.offsetHeight:0)-30;
+    zoom=clamp(Math.min(w()/(EM*base()),h/(EM*ASPECT*base())));apply();}
+  function step(d){mode='manual';zoom=clamp(zoom*(d>0?1.12:1/1.12));apply();}
+  document.getElementById('zoomIn').onclick=function(){step(1)};
+  document.getElementById('zoomOut').onclick=function(){step(-1)};
+  document.getElementById('fitPage').onclick=fitPage;
+  document.getElementById('fitWidth').onclick=fitWidth;
+  addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var t=e.target.tagName; if(t==='INPUT'||t==='TEXTAREA')return;
+    if(e.key==='+'||e.key==='='){step(1);e.preventDefault();}
+    else if(e.key==='-'||e.key==='_'){step(-1);e.preventDefault();}
+    else if(e.key==='0'){fitPage();e.preventDefault();}});
+  var s=null; try{s=JSON.parse(localStorage.getItem('dm1-zoom')||'null');}catch(e){}
+  if(s&&typeof s.z==='number'){zoom=clamp(s.z);mode=s.m||'manual';apply();}else{fitPage();}
+  var t; addEventListener('resize',function(){ if(mode==='manual')return;
+    clearTimeout(t); t=setTimeout(mode==='page'?fitPage:fitWidth,140);});
+})();
+</script>
+"""
+
+
+def nav(cur, extra=""):
+    def tab(href, label, key):
+        a = ' aria-current="page"' if key == cur else ""
+        return f'<a class="tab" href="{href}"{a}>{label}</a>'
+    return (
+        '<nav class="nav"><div class="in">'
+        '<a class="home" href="index.html">DM Assignment-1</a>'
+        + tab("part-a.html", "Part A &middot; Assignment", "a")
+        + tab("part-b.html", "Part B &middot; Revision", "b")
+        + '<span class="sp"></span>' + extra
+        + "</div></nav>"
+    )
+
+
+def page(path, title, body, navhtml, script="", sheets=0):
+    tpl = (HERE / "template.html").read_text()
+    out = (tpl.replace("__TITLE__", esc(title))
+              .replace("__META__", esc(content.BLURB))
+              .replace("__NAV__", navhtml)
+              .replace("__BODY__", body)
+              .replace("__SCRIPT__", script)
+              .replace("__BUILTLINE__",
+                       (f"{sheets} F4 sheets at {LINES_PER_SHEET} ruled lines. "
+                        if sheets else "")
+                       + f"Rebuilt {date.today().isoformat()}."))
+    left = re.findall(r"__[A-Z_]+__", out)
+    if left:
+        raise BuildError(f"unreplaced tokens: {sorted(set(left))}")
+    (HERE / path).write_text(out)
+    print(f"  wrote {path} ({len(out)/1024:.1f} KB)")
 
 
 def main():
     blocks = content.BLOCKS
-    print(f"blocks: {len(blocks)}")
-
     check_widths(blocks)
     sheets = paginate(blocks)
-
-    for n, sheet in enumerate(sheets, 1):
-        used = sum(line_cost(b) for b in sheet)
+    for n, sh in enumerate(sheets, 1):
+        used = sum(line_cost(b) for b in sh)
         if used > LINES_PER_SHEET:
-            raise BuildError(f"sheet {n} holds {used} lines, limit {LINES_PER_SHEET}")
-        print(f"  sheet {n:>2}: {used:>2}/{LINES_PER_SHEET} lines")
-
+            raise BuildError(f"sheet {n} holds {used} lines")
     total = sum(sum(line_cost(b) for b in s) for s in sheets)
-    print(f"sheets: {len(sheets)}, ruled lines used: {total}")
+    print(f"sheets: {len(sheets)}  lines used: {total}")
 
-    out, running = [], ""
-    for n, sheet in enumerate(sheets, 1):
-        running = question_of(sheet, running)
-        body = "".join(render_block(b) for b in sheet)
-        out.append(
-            f'<section class="sheet" aria-label="Sheet {n} of {len(sheets)}">'
-            f'<div class="body">{body}</div>'
-            f'<span class="sheetq">{esc(running)}</span>'
-            f'<span class="folio">{n} / {len(sheets)}</span>'
-            f"</section>"
-        )
+    dates = "".join(f"<div><dt>{esc(l)}</dt><dd>{esc(v)}<em>{esc(n)}</em></dd></div>"
+                    for l, v, n in content.DATES)
 
-    dates = "".join(
-        f"<div><dt>{esc(label)}</dt><dd>{esc(value)}<em>{esc(note)}</em></dd></div>"
-        for label, value, note in content.DATES
-    )
-
-    part = (
-        '<div class="part">'
-        "<h2>Part A &mdash; the eight solutions, to copy by hand</h2>"
-        f"<p>{esc(content.SHEETS_INTRO)}</p>"
-        f'<div class="howto">Submission is physical copies collected together '
-        f"and handed to the Section Office, so these are written out, not printed.</div>"
+    body = (
+        '<div class="head">'
+        f"<h1>{esc(content.TITLE)}</h1>"
+        f'<p class="course">{esc(content.COURSE)}</p>'
+        f"<p>{esc(content.BLURB)}</p>"
+        f'<dl class="dates">{dates}</dl></div>'
+        '<div class="pick">'
+        '<a href="part-b.html"><p class="when">Exam Wed 7 October</p>'
+        "<h2>Part B &mdash; revision</h2>"
+        "<p>Start here. Ordered by what he named aloud in the 3 October class.</p>"
+        "<ul><li>What he said about the exam</li>"
+        "<li>Hopkins, Silhouette, cluster count</li>"
+        "<li>Worked maths on fresh numbers</li>"
+        "<li>Traps that cost marks</li></ul></a>"
+        '<a href="part-a.html"><p class="when">Due 28 October</p>'
+        "<h2>Part A &mdash; the assignment</h2>"
+        f"<p>All eight solutions on {len(sheets)} F4 sheets, sized to copy by hand "
+        "one ruled line at a time.</p>"
+        "<ul><li>3.4, 3.5, 3.6 &mdash; schemas and OLAP</li>"
+        "<li>4.6 &mdash; Apriori and FP-growth</li>"
+        "<li>6.7, 6.17 &mdash; trees, Bayes, ROC</li>"
+        "<li>8.2, 8.17 &mdash; k-means and comparison</li></ul></a>"
         "</div>"
     )
+    page("index.html", content.TITLE, body, nav("home"))
 
-    toolbar = (
-        '<div class="zoombar"><div class="inner">'
-        '<span class="lbl">Sheet size</span>'
+    out, running = [], ""
+    for n, sh in enumerate(sheets, 1):
+        for b in sh:
+            if b[0] == "q":
+                running = b[1]
+        out.append(
+            f'<section class="sheet" aria-label="Sheet {n} of {len(sheets)}">'
+            f'<div class="body">{"".join(render(b) for b in sh)}</div>'
+            f'<span class="sheetq">{esc(running)}</span>'
+            f'<span class="folio">{n} / {len(sheets)}</span></section>')
+    zoomctl = (
         '<button id="zoomOut" type="button" aria-label="Smaller">A&minus;</button>'
         '<span class="pct" id="zoomPct" aria-live="polite">100%</span>'
         '<button id="zoomIn" type="button" aria-label="Bigger">A+</button>'
-        '<button id="fitPage" type="button" data-mode="page">Fit whole sheet</button>'
+        '<button id="fitPage" type="button" data-mode="page">Whole sheet</button>'
         '<button id="fitWidth" type="button" data-mode="width">Fit width</button>'
-        '<span class="spacer"></span>'
-        f'<span class="hint">{len(sheets)} sheets &middot; keys + &minus; 0</span>'
-        '</div></div>'
-    )
+        f'<span class="meta">{len(sheets)} sheets &middot; + &minus; 0</span>')
+    body = (
+        '<div class="head"><h1>Part A &mdash; the eight solutions</h1>'
+        f'<p class="course">{esc(content.COURSE)}</p>'
+        f"<p>{esc(content.SHEETS_INTRO)}</p></div>"
+        f'<div class="sheets"><div class="sheetwrap">{"".join(out)}</div></div>')
+    page("part-a.html", "Part A — DM Assignment-1 solutions", body,
+         nav("a", zoomctl), ZOOM_JS, len(sheets))
 
-    part += (
-        toolbar
-        + f'<div class="sheets"><div class="sheetwrap">{"".join(out)}</div></div>'
-    )
-
-    # ---------------- Part B ----------------
     pb, toc = [], []
-    for block in content.PARTB:
-        k = block[0]
+    for b in content.PARTB:
+        k = b[0]
         if k == "sec":
-            _, sid, title = block
-            toc.append((sid, title))
-            pb.append(f'<h3 id="{sid}">{esc(title)}</h3>')
+            toc.append((b[1], b[2]))
+            pb.append(f'<h3 id="{b[1]}">{esc(b[2])}</h3>')
         elif k == "p":
-            pb.append(f"<p>{esc(block[1])}</p>")
-        elif k == "flag":
-            pb.append(f'<p class="flag">{esc(block[1])}</p>')
-        elif k == "warn":
-            pb.append(f'<p class="warn">{esc(block[1])}</p>')
+            pb.append(f"<p>{esc(b[1])}</p>")
+        elif k in ("flag", "warn"):
+            pb.append(f'<p class="{k}">{esc(b[1])}</p>')
         elif k == "math":
-            pb.append(f'<p class="fml">{esc(block[1])}</p>')
+            pb.append(f'<p class="fml">{esc(b[1])}</p>')
         elif k == "work":
-            _, title, lines = block
-            body = "\n".join(esc(l) for l in lines)
-            pb.append(
-                f'<figure class="work"><figcaption>{esc(title)}</figcaption>'
-                f"<pre>{body}</pre></figure>"
-            )
+            pb.append(f'<figure class="work"><figcaption>{esc(b[1])}</figcaption>'
+                      f'<pre>{chr(10).join(esc(l) for l in b[2])}</pre></figure>')
         elif k == "tbl":
-            headers, rows = block[1], block[2]
-            aligns = block[3] if len(block) > 3 else "l" * len(headers)
-            th = "".join(f"<th>{esc(h)}</th>" for h in headers)
-            trs = "".join(
-                "<tr>" + "".join(f"<td>{esc(str(c))}</td>" for c in row) + "</tr>"
-                for row in rows
-            )
-            pb.append(f'<div class="tw"><table><thead><tr>{th}</tr></thead><tbody>{trs}</tbody></table></div>')
+            heads, rows = b[1], b[2]
+            th = "".join(f"<th>{esc(h)}</th>" for h in heads)
+            trs = "".join("<tr>" + "".join(f"<td>{esc(c)}</td>" for c in r) + "</tr>"
+                          for r in rows)
+            pb.append(f'<div class="tw"><table><thead><tr>{th}</tr></thead>'
+                      f"<tbody>{trs}</tbody></table></div>")
         else:
             raise BuildError(f"unknown Part B block {k!r}")
-
-    tocnav = "".join(f'<a href="#{sid}">{esc(t)}</a>' for sid, t in toc)
-    part += (
-        '<div class="part partb">'
-        "<h2>Part B &mdash; revision for the final</h2>"
+    body = (
+        '<div class="head"><h1>Part B &mdash; revision for the final</h1>'
+        f'<p class="course">{esc(content.COURSE)}</p>'
         f"<p>{esc(content.PARTB_INTRO)}</p>"
-        f'<nav class="toc">{tocnav}</nav>'
-        "</div>"
-        f'<div class="guide">{"".join(pb)}</div>'
-    )
-
-    tpl = (HERE / "template.html").read_text()
-    page = (
-        tpl.replace("__TITLE__", esc(content.TITLE))
-        .replace("__COURSE__", esc(content.COURSE))
-        .replace("__BLURB__", esc(content.BLURB))
-        .replace("__META__", esc(content.BLURB))
-        .replace("__DATES__", dates)
-        .replace("__CONTENT__", part)
-        .replace(
-            "__BUILTLINE__",
-            f"{len(sheets)} sheets at {LINES_PER_SHEET} ruled lines each. "
-            f"Rebuilt {date.today().isoformat()} by build.py.",
-        )
-    )
-
-    if "__" in re.sub(r"__[A-Z]+__", "", page):
-        pass  # harmless; only guard against unreplaced tokens below
-    leftover = re.findall(r"__[A-Z_]+__", page)
-    if leftover:
-        raise BuildError(f"unreplaced template tokens: {sorted(set(leftover))}")
-
-    (HERE / "index.html").write_text(page)
-    kb = len(page) / 1024
-    print(f"wrote index.html ({kb:.1f} KB)")
+        '<nav class="toc">'
+        + "".join(f'<a href="#{i}">{esc(t)}</a>' for i, t in toc)
+        + "</nav></div>"
+        f'<div class="guide">{"".join(pb)}</div>')
+    page("part-b.html", "Part B — DM revision for the final", body, nav("b"))
 
 
 if __name__ == "__main__":
     try:
         main()
-    except BuildError as exc:
-        print(f"build failed: {exc}", file=sys.stderr)
+    except BuildError as e:
+        print(f"build failed: {e}", file=sys.stderr)
         sys.exit(1)

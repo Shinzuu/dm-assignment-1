@@ -1,10 +1,10 @@
 # DM Assignment-1 — worked solutions + exam revision
 
 Course work for **CSE 4333 Data Mining**, Premier University Chittagong.
-One page, two halves:
+Three pages: a welcome that routes you to either half, then:
 
 **Part A** — the eight assigned textbook problems, worked out and paginated
-into F4 answer sheets at 32 ruled lines each, so they can be copied by hand
+into 18 F4 answer sheets at 32 ruled lines each, so they can be copied by hand
 one line at a time. Submission is physical copies to the Section Office.
 
 **Part B** — revision for the final, weighted by what the lecturer flagged in
@@ -29,8 +29,8 @@ From Han, Pei & Tong, *Data Mining: Concepts and Techniques*, 4th ed. (2022).
 ## Building
 
 ```bash
-python3 build.py     # content.py + template.html -> index.html
-python3 check.py     # headless-browser layout audit, exits 1 on failure
+python3 build.py   # -> index.html, part-a.html, part-b.html
+python3 check.py   # headless-browser audit of all three, exits 1 on failure
 ```
 
 `build.py` paginates into sheets and **refuses to build** if a line would be
