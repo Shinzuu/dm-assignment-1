@@ -17,8 +17,8 @@ overlaps, the numbers here are different.
 
 | | |
 |---|---|
+| Final exam | Wed 7 October, 2:00–5:00 PM — Chapters 3, 4, 6, 8, one question each |
 | Assignment-1 due | 28 October (1–2 days' grace) |
-| Final exam begins | 7 November — Chapters 3, 4, 6, 8, one question each |
 
 ## Problems covered
 

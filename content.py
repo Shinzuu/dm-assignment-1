@@ -19,13 +19,15 @@ Block forms:
 TITLE = "Data Mining Assignment-1 — worked solutions"
 COURSE = "CSE 4333 · Han, Pei & Tong 4th ed. · Chapters 3, 4, 6, 8"
 BLURB = (
-    "Eight textbook problems, worked out and broken into F4 sheets you copy "
-    "by hand one ruled line at a time. Nothing on a sheet runs past its rules, "
-    "so what you see is what fits."
+    "The exam is Wednesday 7 October. Part B is the revision half — start there. "
+    "Part A holds the eight assignment solutions as F4 sheets to copy by hand "
+    "for the 28 October submission."
 )
 DATES = [
-    ("Assignment-1 due", "28 October", "physical copies to the Section Office, 1–2 days' grace"),
-    ("Final exam begins", "7 November", "Chapters 3, 4, 6 and 8 — one question from each"),
+    ("Final exam", "Wed 7 October, 2:00–5:00 PM",
+     "CSE 4333(V4), 3 hours — Chapters 3, 4, 6 and 8, one question from each"),
+    ("Assignment-1 due", "28 October",
+     "handwritten, to the Section Office, 1–2 days' grace"),
 ]
 
 SHEETS_INTRO = (
@@ -701,7 +703,7 @@ PARTB = [
    ["Questions", "All will be common. Some numerical problems may carry different values, but the patterns match what was discussed."],
    ["Cut", "Nearest-neighbour / single-linkage clustering is out — he did not teach it."],
    ["Assignment", "Due 28 October, 1–2 days' grace, physical copies to the Section Office."],
-   ["Exam", "Finals begin 7 November."],
+   ["Exam", "Wednesday 7 October, 2:00–5:00 PM. Three hours."],
  ]),
  ("flag", "Named for the exam: the Silhouette Coefficient (“পরীক্ষার জন্য পড়তে হবে”), the Hopkins statistic with textbook Example 8.9, and the distance matrix from Chapter 2."),
 
