@@ -67,6 +67,20 @@ def check_widths(blocks):
 
 
 
+
+def is_data(text):
+    """True for a field list, a count list or similar: never merge as prose.
+
+    Joining these welds one table's columns onto the next table's, or runs
+    three separate itemset lines into one unreadable sentence.
+    """
+    if len([t for t in text.split() if "_" in t]) >= 2:
+        return True                                   # snake_case field list
+    if len(re.findall(r"\w+:\d", text)) >= 2:
+        return True                                   # K:5, E:4, M:3 ...
+    return False
+
+
 TARGET_WORDS = 8          # what a hand comfortably fits on one ruled line
 
 
@@ -86,7 +100,10 @@ def reflow(blocks):
     # heading must stay on its own line; everything else is flowing prose and
     # can be rejoined into a paragraph.
     STARTS = re.compile(
-        r"^(\d+\.\s|\([a-z]\)\s|L\d\b|C\d\b|ROUND\b|Scan\b|[A-Z][A-Z][A-Z -]*$)")
+        r"^(\d+\.\s|\d+:\s|\([a-z]\)\s|L\d\b|C\d\b|ROUND\b|Scan\b|\{|size \d|"
+        r"[A-Z][A-Z][A-Z -]*$)")
+    # a standalone heading or a label ending in a colon absorbs nothing
+    STANDS_ALONE = re.compile(r"^[A-Z][A-Z0-9 /-]{2,}$")
 
     # 1. rejoin
     merged, i = [], 0
@@ -98,11 +115,22 @@ def reflow(blocks):
             continue
         kind, text = b[0], b[1]
         j = i + 1
-        while j < len(blocks) and blocks[j][0] == kind:
+        # an ind2 line straight after an ind line is a hanging continuation of
+        # the same sentence, so fold it in rather than leaving the indent to
+        # jump mid-clause
+        while j < len(blocks) and (blocks[j][0] == kind
+                                   or (kind == "ind" and blocks[j][0] == "ind2")):
             nxt = blocks[j][1].lstrip()
-            if STARTS.match(nxt):
+            # a trailing comma says the list carries on, so let it join
+            continues = text.rstrip().endswith(",")
+            if ((STARTS.match(nxt) or is_data(text) or is_data(nxt))
+                    and not continues
+                    or STANDS_ALONE.match(text.strip())
+                    or text.rstrip().endswith(":")):
                 break
-            text = text.rstrip() + " " + nxt
+            # a trailing hyphen is a split word, not a word break
+            joiner = "" if text.rstrip().endswith("-") else " "
+            text = text.rstrip() + joiner + nxt
             j += 1
         merged.append((kind, text))
         i = j
@@ -119,6 +147,8 @@ def reflow(blocks):
         # two lines and strands a bracket
         protected = re.sub(r"\(([^()]*)\)",
                            lambda m: "(" + m.group(1).replace(" ", "\x00") + ")", text)
+        protected = re.sub(r"\[([^\[\]]*)\]",
+                           lambda m: "[" + m.group(1).replace(" ", "\x00") + "]", protected)
         words, line, made = protected.split(), "", []
         for w in words:
             cand = w if not line else line + " " + w
@@ -131,6 +161,17 @@ def reflow(blocks):
                 line = cand
         if line:
             made.append(line.replace("\x00", " "))
+        # a paragraph ending on one or two words reads as a dropped fragment;
+        # pull words back from the line above to even the last two out
+        if len(made) >= 2 and len(made[-1].split()) <= 2:
+            a, bl = made[-2].split(), made[-1].split()
+            while len(bl) < 4 and len(a) > 3:
+                bl.insert(0, a.pop())
+                if len(" ".join(bl)) > budget:
+                    a.append(bl.pop(0))
+                    break
+            made[-2], made[-1] = " ".join(a), " ".join(bl)
+
         # justify every line of the paragraph except its last
         for k, ln in enumerate(made):
             out.append((kind, ln, k < len(made) - 1))
