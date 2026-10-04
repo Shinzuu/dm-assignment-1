@@ -155,6 +155,10 @@ def render(b):
     raise BuildError(f"cannot render {k!r}")
 
 
+PRINT_A = (
+    "<style>@media print{@page{size:210mm 330mm;margin:0}}</style>"
+)
+
 ZOOM_JS = """
 <script>
 (function(){
@@ -290,7 +294,7 @@ def main():
         f"<p>{esc(content.SHEETS_INTRO)}</p></div>"
         f'<div class="sheets"><div class="sheetwrap">{"".join(out)}</div></div>')
     page("part-a.html", "Part A — DM Assignment-1 solutions", body,
-         nav("a", zoomctl), ZOOM_JS, len(sheets))
+         nav("a", zoomctl), PRINT_A + ZOOM_JS, len(sheets))
 
     pb, toc = [], []
     for b in content.PARTB:

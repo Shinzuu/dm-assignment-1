@@ -92,15 +92,16 @@ def snowflake_university():
 def star_spectator():
     """3.6(a) — star schema on date, spectator, location, game."""
     b = [
-        _box(36, 22, 28, 18, "sales", ["date_key, game_id", "spectator_id", "location_id", "count, charge"], "#F3F7FB"),
-        _box(3, 3, 24, 14, "date", ["date_key", "day, month", "quarter, year"]),
-        _box(73, 3, 24, 14, "spectator", ["spectator_id", "name, category", "phone"]),
-        _box(3, 46, 24, 14, "location", ["location_id", "name, city", "province"]),
-        _box(73, 46, 24, 14, "game", ["game_id", "name, type", "description"]),
-        _line(27, 13, 38, 23), _line(73, 13, 62, 23),
-        _line(27, 50, 38, 39), _line(73, 50, 62, 39),
+        _box(36, 24, 28, 20, "sales",
+             ["date_key, game_id", "spectator_id", "location_id", "count, charge"], "#F3F7FB"),
+        _box(2, 2, 26, 16, "date", ["date_key", "day, month", "quarter, year"]),
+        _box(72, 2, 26, 16, "spectator", ["spectator_id", "name, category", "phone"]),
+        _box(2, 50, 26, 16, "location", ["location_id", "name, city", "province"]),
+        _box(72, 50, 26, 16, "game", ["game_id", "name, type", "description"]),
+        _line(28, 14, 38, 26), _line(72, 14, 62, 26),
+        _line(28, 54, 38, 42), _line(72, 54, 62, 42),
     ]
-    return _wrap(61, "".join(b))
+    return _wrap(70, "".join(b))
 
 
 # ---------------------------------------------------------------- FP-tree
@@ -122,9 +123,8 @@ def fp_tree():
         _line(32, 29, 24, 34.8), _line(37, 29, 44, 34.8), _line(72, 29.4, 72, 34.6),
         _line(22, 41.4, 22, 46.6), _line(46, 41.4, 46, 46.6),
         _line(22, 53.4, 22, 58.6),
-        _txt(88, 15, "K:5", 2.5), _txt(88, 27, "E:4", 2.5),
-        _txt(88, 39, "M:3", 2.5), _txt(88, 51, "O:3", 2.5), _txt(88, 63, "Y:3", 2.5),
-        _txt(88, 9, "header", 2.4, weight="700"),
+        _box(84, 8, 15, 24, "header",
+             ["K:5", "E:4", "M:3", "O:3", "Y:3"], "#F7F9FC"),
     ]
     return _wrap(67, "".join(b))
 
@@ -134,26 +134,34 @@ def fp_tree():
 def decision_tree():
     """6.7(b) — the induced tree, salary at the root."""
     def leaf(x, y, lab, n):
-        return (f'<rect x="{x:g}" y="{y:g}" width="17" height="5.4" rx="2.7" '
+        return (f'<rect x="{x:g}" y="{y:g}" width="19" height="5.6" rx="2.8" '
                 f'fill="#EAF2E7" stroke="#15203A" stroke-width="0.4"/>'
-                f'{_txt(x + 8.5, y + 3.8, f"{lab} ({n})", 2.4, "middle", "600")}')
-    rows = [("26\u201330K", "junior", 46), ("31\u201335K", "junior", 40),
-            ("36\u201340K", "senior", 4), ("41\u201345K", "junior", 4),
-            ("66\u201370K", "senior", 8)]
-    b = [_box(30, 1, 22, 6, "salary?", (), "#F3F7FB")]
-    for i, (lab, cls, n) in enumerate(rows):
-        y = 11 + i * 7.4
-        b += [_txt(0, y + 3.8, lab, 2.4), leaf(13, y, cls, n), _line(41, y + 2.7, 30, y + 2.7)]
-    b.append(_line(41, 7, 41, 48.5))
-    b += [_txt(28, 52.5, "46\u201350K", 2.4), _box(41, 46, 24, 6, "department?", (), "#F3F7FB"),
-          _line(41, 48.5, 41, 49)]
+                f'{_txt(x + 9.5, y + 3.9, f"{lab} ({n})", 2.4, "middle", "600")}')
+    b = [_box(26, 1, 22, 6.4, "salary?", (), "#F3F7FB")]
+
+    # five pure branches down the left, label then box, no crossing lines
+    for i, (lab, cls, n) in enumerate([("26\u201330K", "junior", 46), ("31\u201335K", "junior", 40),
+                                       ("36\u201340K", "senior", 4), ("41\u201345K", "junior", 4),
+                                       ("66\u201370K", "senior", 8)]):
+        y = 12 + i * 7.6
+        b += [_txt(0, y + 3.9, lab, 2.4), leaf(15, y, cls, n),
+              _line(37, y + 2.8, 34, y + 2.8), _line(34, y + 2.8, 34, y + 2.8)]
+    b.append(_line(37, 7.4, 37, 50))                       # the trunk
+    for i in range(5):
+        y = 12 + i * 7.6
+        b.append(_line(37, y + 2.8, 34, y + 2.8))
+    b.append(_line(34, 14.8, 34, 45.2))
+
+    # the one impure branch, carried on down
+    b += [_txt(22, 54, "46\u201350K", 2.4),
+          _box(32, 50, 26, 6.4, "department?", (), "#F3F7FB")]
     for i, (lab, cls, n) in enumerate([("sales", "senior", 30), ("systems", "junior", 23),
                                        ("marketing", "senior", 10)]):
-        y = 56 + i * 7.4
-        b += [_txt(66, y + 3.8, lab, 2.3), leaf(81, y, cls, n),
-              _line(72, 52, 72, y + 2.7), _line(72, y + 2.7, 81, y + 2.7)]
-    b.append(_line(65, 49, 72, 49))
-    return _wrap(79, "".join(b))
+        y = 60 + i * 7.6
+        b += [_txt(62, y + 3.9, lab, 2.3), leaf(78, y, cls, n),
+              _line(60, y + 2.8, 62, y + 2.8)]
+    b += [_line(58, 53.2, 60, 53.2), _line(60, 53.2, 60, 73.2)]
+    return _wrap(78, "".join(b))
 
 
 # ---------------------------------------------------------------- ROC
