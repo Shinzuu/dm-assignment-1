@@ -119,18 +119,21 @@ def reflow(blocks):
         # two lines and strands a bracket
         protected = re.sub(r"\(([^()]*)\)",
                            lambda m: "(" + m.group(1).replace(" ", "\x00") + ")", text)
-        words, line = protected.split(), ""
+        words, line, made = protected.split(), "", []
         for w in words:
             cand = w if not line else line + " " + w
             too_long = len(cand.replace("\x00", " ")) > budget
             too_many = len(cand.replace("\x00", " ").split()) > TARGET_WORDS
             if line and (too_long or too_many):
-                out.append((kind, line.replace("\x00", " ")))
+                made.append(line.replace("\x00", " "))
                 line = w
             else:
                 line = cand
         if line:
-            out.append((kind, line.replace("\x00", " ")))
+            made.append(line.replace("\x00", " "))
+        # justify every line of the paragraph except its last
+        for k, ln in enumerate(made):
+            out.append((kind, ln, k < len(made) - 1))
 
     # never leave a one- or two-letter word stranded at the end of a line:
     # carry it down to join the word it belongs with
@@ -145,8 +148,8 @@ def reflow(blocks):
         budget = HARD_CHARS - INDENT_COST.get(bnext[0], 0)
         moved = m.group(1) + " " + bnext[1]
         if len(moved) <= budget and len(moved.split()) <= TARGET_WORDS + 1:
-            out[i] = (a[0], a[1][: m.start()])
-            out[i + 1] = (bnext[0], moved)
+            out[i] = (a[0], a[1][: m.start()]) + tuple(a[2:])
+            out[i + 1] = (bnext[0], moved) + tuple(bnext[2:])
     return out
 
 
@@ -200,9 +203,12 @@ def esc(s):
     return html.escape(str(s), quote=False)
 
 
-def _p(cls, text, indent=0):
-    """A ruled line. Long ones justify out to the right margin."""
-    if len(text) + indent >= JUSTIFY_CHARS and not text.rstrip().endswith(":"):
+def _p(cls, text, indent=0, justify=None):
+    """A ruled line. Justified unless it ends a paragraph."""
+    if justify is None:
+        justify = (len(text) + indent >= JUSTIFY_CHARS
+                   and not text.rstrip().endswith(":"))
+    if justify:
         cls += " j"
     return f'<p class="{cls}">{esc(text)}</p>'
 
@@ -212,19 +218,19 @@ def render(b):
     if k == "blank":
         return '<div class="blank"></div>'
     if k == "q":
-        return _p("ln q", b[1])
+        return _p("ln q", b[1], 0, b[2] if len(b) > 2 else None)
     if k == "h":
-        return _p("ln h", b[1])
+        return _p("ln h", b[1], 0, b[2] if len(b) > 2 else None)
     if k == "ln":
-        return _p("ln", b[1])
+        return _p("ln", b[1], 0, b[2] if len(b) > 2 else None)
     if k == "ind":
-        return _p("ln indent", b[1], 2)
+        return _p("ln indent", b[1], 2, b[2] if len(b) > 2 else None)
     if k == "ind2":
-        return _p("ln indent2", b[1], 4)
+        return _p("ln indent2", b[1], 4, b[2] if len(b) > 2 else None)
     if k == "math":
         return f'<p class="ln math">{esc(b[1])}</p>'
     if k == "quote":
-        return _p("ln quote", b[1])
+        return _p("ln quote", b[1], 0, b[2] if len(b) > 2 else None)
     if k == "svg":
         lines, svg = diagrams.REGISTRY[b[1]]()
         return f'<div style="height:calc({lines} * var(--pitch))">{svg}</div>'
