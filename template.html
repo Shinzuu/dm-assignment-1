@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="__META__">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>&#9999;</text></svg>">
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FCFBF7;
+    --rule:#BFD0E0;
+    --margin:#A8453F;
+    --ink:#15203A;
+    --pencil:#6A7794;
+
+    --ground:#141823;
+    --panel:#1C2130;
+    --panel-2:#232936;
+    --screen-ink:#E4E8F0;
+    --screen-dim:#98A2B6;
+
+    --sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+    --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+    --line:#2E3444;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--ground);color:var(--screen-ink);
+    font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased;
+  }
+  a{color:#9BB8E8}
+
+  /* ---------------- masthead ---------------- */
+  .masthead{max-width:62rem;margin:0 auto;padding:2.6rem 1.25rem 1.2rem}
+  .masthead h1{
+    font:600 clamp(1.5rem,4.4vw,2.3rem)/1.15 var(--serif);
+    margin:0 0 .5rem;letter-spacing:-.01em;
+  }
+  .masthead .course{
+    font:500 .82rem/1 var(--mono);color:var(--screen-dim);
+    margin:0 0 1.1rem;
+  }
+  .masthead p{max-width:58ch;color:#C3CBD9;margin:.5rem 0}
+  .dates{
+    display:flex;flex-wrap:wrap;gap:0 2.2rem;margin:1.4rem 0 0;
+    padding:.9rem 0 0;border-top:1px solid var(--line);
+  }
+  .dates div{min-width:12rem}
+  .dates dt{font:500 .72rem/1.6 var(--mono);color:var(--screen-dim)}
+  .dates dd{margin:0;font:600 1.05rem/1.4 var(--sans)}
+  .dates dd em{font:400 .82rem/1.4 var(--sans);color:var(--screen-dim);font-style:normal;display:block}
+
+  /* ---------------- section divider ---------------- */
+  .part{max-width:62rem;margin:3rem auto 1rem;padding:0 1.25rem}
+  .part h2{
+    font:600 1.35rem/1.2 var(--serif);margin:0 0 .35rem;
+  }
+  .part p{color:#AEB7C7;max-width:58ch;margin:.3rem 0 0;font-size:.95rem}
+  .part .howto{
+    margin:1.1rem 0 0;padding:.85rem 1rem;background:var(--panel);
+    border-left:3px solid var(--margin);border-radius:0 4px 4px 0;
+    font-size:.92rem;color:#C7CEDC;max-width:58ch;
+  }
+
+  /* ---------------- the sheet ---------------- */
+  /* When zoomed past the viewport the SHEET REGION scrolls sideways, not the
+     document, so the masthead and the zoom controls stay put. */
+  .sheets{padding:1rem 0 4rem;overflow-x:auto;overscroll-behavior-x:contain}
+  .sheetwrap{
+    display:flex;flex-direction:column;align-items:center;gap:2.2rem;
+    padding:0 1rem;width:max-content;min-width:100%;margin-inline:auto;
+  }
+
+  /* Geometry, in em so the whole sheet scales as one unit.
+     F4 = 210 x 330 mm. Line pitch 9mm, type 6.35mm (~18pt).
+     => 1em = 6.35mm, so 210mm = 33.07em, 330mm = 51.97em, pitch = 1.4173em. */
+  .sheet{
+    --pitch:1.4173em;
+    --top:3.4646em;      /* 22mm */
+    --marg:3.4646em;     /* 22mm to the red rule */
+    --right:1.8898em;    /* 12mm */
+    --rule-shift:0.448em; /* rule N must land on baseline N */
+    position:relative;
+    width:33.07em;height:51.97em;
+    font-size:calc(var(--base,clamp(7.4px,2.08vw,22.5px)) * var(--zoom,1));
+    background:var(--paper);color:var(--ink);
+    box-shadow:0 1px 2px rgba(0,0,0,.4),0 14px 34px rgba(0,0,0,.34);
+    overflow:hidden;
+  }
+  /* blue ruling */
+  .sheet::before{
+    content:"";position:absolute;left:0;right:0;
+    top:calc(var(--top) - var(--rule-shift));
+    height:calc(32 * var(--pitch));
+    background:repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--pitch) - 1px),
+      var(--rule) calc(var(--pitch) - 1px),
+      var(--rule) var(--pitch)
+    );
+  }
+  /* red margin rule */
+  .sheet::after{
+    content:"";position:absolute;top:0;bottom:0;
+    left:var(--marg);width:1px;background:var(--margin);opacity:.78;
+  }
+  .sheet .body{
+    position:absolute;top:var(--top);
+    left:calc(var(--marg) + 1.1024em);   /* 7mm gutter after the rule */
+    right:var(--right);
+    font-size:1em;
+  }
+  /* every block sits ON a rule: line-height == pitch, no margins anywhere */
+  .sheet .body > *{
+    margin:0;line-height:var(--pitch);font-size:1em;
+  }
+  .sheet .ln{ white-space:pre-wrap }
+  .sheet .blank{height:var(--pitch)}
+  .sheet .q{ font:600 1em/var(--pitch) var(--sans) }
+  .sheet .h{ font:600 1em/var(--pitch) var(--sans) }
+  .sheet .part-label{font-weight:600}
+  .sheet .quote{
+    font-family:var(--serif);color:#2B3550;
+  }
+  .sheet .math{font-family:var(--mono);font-size:.94em}
+  .sheet .indent{padding-left:1.6em}
+  .sheet .indent2{padding-left:3.2em}
+
+  /* tables drawn on the ruling: each row exactly one pitch */
+  .sheet table{
+    border-collapse:collapse;width:100%;
+    font-size:.88em;table-layout:auto;
+  }
+  /* A row must be exactly one pitch tall. Collapsed borders add 1px per row,
+     so take it off the content box; nowrap stops a long cell silently
+     becoming two rules deep. */
+  .sheet table td,.sheet table th{
+    height:calc(var(--pitch) - 1px);line-height:calc(var(--pitch) - 1px);
+    padding:0 .45em;border:1px solid #9FB3C8;text-align:left;font-weight:400;
+    vertical-align:middle;white-space:nowrap;overflow:hidden;
+  }
+  .sheet table th{font-weight:600;background:#EFF3F7}
+  .sheet table td.n,.sheet table th.n{text-align:right;font-family:var(--mono)}
+
+  /* a box telling you what to draw by hand */
+  /* the dashed box must stay on the ruling: same font-size as the sheet, so
+     var(--pitch) resolves identically, and outline so it adds no height */
+  .sheet .draw{
+    outline:1px dashed var(--pencil);outline-offset:-2px;
+    padding:0 .7em;color:#3A4663;
+  }
+  .sheet .draw b,.sheet .draw p{
+    display:block;margin:0;line-height:var(--pitch);padding-left:0;
+  }
+  .sheet .draw b{font-weight:600}
+  .sheet .draw b{display:block;font-weight:600}
+
+  .sheet .folio{
+    position:absolute;right:var(--right);bottom:1.5748em;  /* 10mm */
+    font:500 .86em/1 var(--mono);color:var(--pencil);
+  }
+  .sheet .sheetq{
+    position:absolute;left:calc(var(--marg) + 1.1024em);bottom:1.5748em;
+    font:500 .86em/1 var(--mono);color:var(--pencil);
+  }
+
+  .sheetnav{
+    max-width:62rem;margin:0 auto;padding:.4rem 1.25rem 0;
+    font:500 .78rem/1.5 var(--mono);color:var(--screen-dim);
+  }
+
+
+  /* ---------------- zoom toolbar ---------------- */
+  .zoombar{
+    position:sticky;top:0;z-index:20;
+    background:color-mix(in srgb,var(--ground) 92%,transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:.55rem 1.25rem;margin-bottom:1.4rem;
+  }
+  .zoombar .inner{
+    max-width:62rem;margin:0 auto;
+    display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;
+  }
+  .zoombar .lbl{
+    font:500 .72rem/1 var(--mono);color:var(--screen-dim);
+    margin-right:.3rem;
+  }
+  .zoombar button{
+    font:500 .8rem/1 var(--sans);
+    background:var(--panel);color:var(--screen-ink);
+    border:1px solid var(--line);border-radius:5px;
+    padding:.42rem .62rem;cursor:pointer;
+  }
+  .zoombar button:hover{border-color:#4A5468}
+  .zoombar button[aria-pressed="true"]{
+    background:var(--panel-2);border-color:var(--margin);color:#fff;
+  }
+  .zoombar button:focus-visible,
+  .masthead a:focus-visible{outline:2px solid #9BB8E8;outline-offset:2px}
+  .zoombar .pct{
+    font:500 .78rem/1 var(--mono);color:var(--screen-dim);
+    min-width:3.4rem;text-align:center;
+  }
+  .zoombar .spacer{flex:1}
+  .zoombar .hint{font-size:.72rem;color:var(--screen-dim)}
+  @media (max-width:560px){ .zoombar .hint{display:none} }
+
+
+  /* ---------------- Part B: screen revision guide ---------------- */
+  .partb{margin-top:4.5rem;border-top:1px solid var(--line);padding-top:2.4rem}
+  .toc{display:flex;flex-wrap:wrap;gap:.35rem .5rem;margin:1.1rem 0 0}
+  .toc a{
+    font:500 .78rem/1 var(--mono);color:var(--screen-dim);text-decoration:none;
+    border:1px solid var(--line);border-radius:4px;padding:.34rem .5rem;
+  }
+  .toc a:hover,.toc a:focus-visible{color:var(--screen-ink);border-color:#4A5468}
+
+  .guide{max-width:62rem;margin:0 auto;padding:0 1.25rem 5rem}
+  .guide h3{
+    font:600 1.15rem/1.3 var(--serif);margin:2.6rem 0 .7rem;
+    padding-top:.9rem;border-top:1px solid var(--line);scroll-margin-top:4.5rem;
+  }
+  .guide h3:first-child{border-top:0;padding-top:0;margin-top:1.6rem}
+  .guide p{margin:.75rem 0;max-width:68ch;color:#C7CEDC}
+  .guide .flag,.guide .warn{
+    padding:.7rem .95rem;border-radius:0 4px 4px 0;margin:1rem 0;max-width:68ch;
+  }
+  .guide .flag{background:var(--panel);border-left:3px solid var(--margin);color:#E6D9D6}
+  .guide .warn{background:var(--panel);border-left:3px solid #C9A227;color:#EDE4CB}
+  .guide .fml{
+    font:500 .95rem/1.7 var(--mono);background:var(--panel);color:#DCE5F2;
+    padding:.6rem .9rem;border-radius:4px;margin:.6rem 0;overflow-x:auto;
+    max-width:none;
+  }
+  .guide .work{margin:1.1rem 0;background:var(--panel);border-radius:5px;overflow:hidden}
+  .guide .work figcaption{
+    font:600 .76rem/1 var(--sans);letter-spacing:.01em;
+    padding:.6rem .9rem;background:var(--panel-2);color:var(--screen-ink);
+  }
+  .guide .work pre{
+    margin:0;padding:.85rem .9rem;overflow-x:auto;
+    font:400 .86rem/1.65 var(--mono);color:#D5DEEC;white-space:pre;
+  }
+  .guide .tw{overflow-x:auto;margin:1.1rem 0}
+  .guide table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:30rem}
+  .guide th,.guide td{
+    border:1px solid var(--line);padding:.5rem .7rem;text-align:left;
+    vertical-align:top;
+  }
+  .guide th{background:var(--panel-2);font-weight:600;color:var(--screen-ink)}
+  .guide td{color:#C3CBD9}
+  .guide tbody tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  @media (max-width:560px){ .guide table{min-width:24rem;font-size:.86rem} }
+
+  footer{
+    max-width:62rem;margin:0 auto;padding:2.4rem 1.25rem 4rem;
+    border-top:1px solid var(--line);color:var(--screen-dim);font-size:.86rem;
+  }
+  footer p{margin:.4rem 0;max-width:62ch}
+
+  @media (max-width:560px){
+    .masthead{padding-top:1.8rem}
+    .sheetwrap{padding:0 .4rem;gap:1.4rem}
+  }
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+
+  @media print{
+    body{background:#fff;color:#000}
+    .masthead,.part,.sheetnav,footer,.zoombar,.guide{display:none!important}
+    .sheets{padding:0;overflow:visible}
+    .sheetwrap{gap:0;padding:0}
+    .sheet{
+      font-size:6.35mm;width:210mm;height:330mm;
+      box-shadow:none;page-break-after:always;break-after:page;
+    }
+    @page{size:210mm 330mm;margin:0}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>__TITLE__</h1>
+  <p class="course">__COURSE__</p>
+  <p>__BLURB__</p>
+  <dl class="dates">__DATES__</dl>
+</header>
+
+__CONTENT__
+
+<footer>
+  <p>Solutions worked from <em>Data Mining: Concepts and Techniques</em>, Han, Pei &amp; Tong, 4th edition (2022). Problem statements are quoted from the book; every numeric answer here was computed independently rather than copied from a solution manual.</p>
+  <p>__BUILTLINE__</p>
+</footer>
+
+
+<script>
+(function(){
+  var sheets=document.querySelector('.sheets');
+  var pct=document.getElementById('zoomPct');
+  if(!sheets) return;
+  var SHEET_EM=33.07, ASPECT=330/210;   // F4
+  var zoom=1, mode='manual';
+
+  function base(){
+    // the clamp() value currently in force, independent of zoom
+    var probe=document.querySelector('.sheet');
+    if(!probe) return 16;
+    var z=parseFloat(getComputedStyle(sheets).getPropertyValue('--zoom'))||1;
+    return parseFloat(getComputedStyle(probe).fontSize)/z;
+  }
+  function apply(){
+    sheets.style.setProperty('--zoom', zoom.toFixed(3));
+    if(pct) pct.textContent=Math.round(zoom*100)+'%';
+    document.querySelectorAll('.zoombar button[data-mode]').forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.dataset.mode===mode));
+    });
+    try{ localStorage.setItem('dm1-zoom', JSON.stringify({z:zoom,m:mode})); }catch(e){}
+  }
+  function fitWidth(){
+    mode='width';
+    var wrap=document.querySelector('.sheetwrap');
+    var avail=wrap.clientWidth - 32;
+    zoom=clamp(avail/(SHEET_EM*base()));
+    apply();
+  }
+  function fitPage(){
+    mode='page';
+    var wrap=document.querySelector('.sheetwrap');
+    var availW=wrap.clientWidth - 32;
+    var bar=document.querySelector('.zoombar');
+    var availH=window.innerHeight - (bar?bar.offsetHeight:0) - 36;
+    zoom=clamp(Math.min(availW/(SHEET_EM*base()), availH/(SHEET_EM*ASPECT*base())));
+    apply();
+  }
+  function clamp(z){ return Math.min(4, Math.max(0.35, z)); }
+  function step(d){ mode='manual'; zoom=clamp(zoom*(d>0?1.12:1/1.12)); apply(); }
+
+  document.getElementById('zoomIn').onclick=function(){step(1)};
+  document.getElementById('zoomOut').onclick=function(){step(-1)};
+  document.getElementById('fitWidth').onclick=fitWidth;
+  document.getElementById('fitPage').onclick=fitPage;
+
+  addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    var t=e.target.tagName;
+    if(t==='INPUT'||t==='TEXTAREA') return;
+    if(e.key==='+'||e.key==='='){ step(1); e.preventDefault(); }
+    else if(e.key==='-'||e.key==='_'){ step(-1); e.preventDefault(); }
+    else if(e.key==='0'){ fitPage(); e.preventDefault(); }
+  });
+
+  var saved=null;
+  try{ saved=JSON.parse(localStorage.getItem('dm1-zoom')||'null'); }catch(e){}
+  if(saved && typeof saved.z==='number'){ zoom=clamp(saved.z); mode=saved.m||'manual'; apply(); }
+  else { fitPage(); }
+
+  var t;
+  addEventListener('resize',function(){
+    if(mode==='manual') return;
+    clearTimeout(t);
+    t=setTimeout(mode==='page'?fitPage:fitWidth,140);
+  });
+})();
+</script>
+</body>
+</html>
