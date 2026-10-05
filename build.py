@@ -400,6 +400,23 @@ def main():
         "<li>8.2, 8.17 &mdash; k-means and comparison</li></ul></a>"
         "</div>"
     )
+
+    # videos, on the home page, each opening in its own tab
+    vids = ['<section class="videos"><h2>Watch first</h2>'
+            f"<p>{esc(content.VIDEOS_INTRO)}</p>"]
+    for group, items in content.VIDEOS:
+        vids.append(f"<h3>{esc(group)}</h3><ul>")
+        for vid, title, chan, why, first in items:
+            tag = '<span class="first">start here</span>' if first else ""
+            vids.append(
+                f'<li><a href="https://www.youtube.com/watch?v={vid}" '
+                f'target="_blank" rel="noopener noreferrer">{esc(title)}</a>'
+                f'{tag}<span class="chan">{esc(chan)}</span>'
+                f'<span class="why">{esc(why)}</span></li>')
+        vids.append("</ul>")
+    vids.append("</section>")
+    body += "".join(vids)
+
     page("index.html", content.TITLE, body, nav("home"))
 
     out, running = [], ""

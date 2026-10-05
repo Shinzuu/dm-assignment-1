@@ -871,3 +871,46 @@ PARTB = [
    ["Accuracy on skewed data", "Quote precision, recall and F₁ as well; accuracy alone flatters the majority class."],
  ]),
 ]
+
+# --------------------------------------------------------------------------
+# Videos. Every id below was checked against YouTube's oEmbed endpoint and
+# returned 200 with the title and channel recorded here. One search result
+# that looked plausible, slQ4Xd_c7lY, was a 404 and is not listed.
+# --------------------------------------------------------------------------
+
+VIDEOS_INTRO = (
+    "One video per technique, nothing more. If you only have an hour, watch "
+    "the three marked start here — they are what he named in class. Each "
+    "opens in a new tab."
+)
+
+VIDEOS = [
+ ("Clustering evaluation", [
+   ("wW1tgWtkj4I", "Elbow method and silhouette coefficient",
+    "Mahesh Huddar", "Both the topics he named for the exam, worked numerically.", True),
+   ("d1qAwe8hthM", "Hierarchical clustering, complete linkage",
+    "Mahesh Huddar", "Complete linkage, which is the one on your syllabus. Single linkage is not.", True),
+   ("FllcPjvztTI", "k-means, solved numerical example",
+    "Mahesh Huddar", "The same shape as problem 8.2.", False),
+ ]),
+ ("Chapter 3 — warehousing and OLAP", [
+   ("BLqE2EKiAy4", "OLAP operations with a real example",
+    "Gate Smashers", "Roll-up, drill-down, slice, dice and pivot. Start here if 3.4(c) made no sense.", True),
+   ("ZMPHwpw4Dn4", "Star, snowflake and fact constellation schemas",
+    "AmpCode", "Exactly the three classes problem 3.4(a) asks you to enumerate.", False),
+ ]),
+ ("Chapter 4 — pattern mining", [
+   ("C57cQKFJhz8", "Apriori, solved example",
+    "Mahesh Huddar", "Candidate generation and pruning, step by step.", False),
+   ("7oGz4PCp9jI", "FP-growth, solved example",
+    "Mahesh Huddar", "Building the FP-tree and mining the conditional pattern bases.", False),
+ ]),
+ ("Chapter 6 — classification", [
+   ("y6VwIcZAUkI", "Entropy and information gain in a decision tree",
+    "Mahesh Huddar", "The calculation behind problem 6.7(b).", False),
+   ("XzSlEA4ck2I", "Naive Bayes, solved example",
+    "Mahesh Huddar", "The PlayTennis example; 6.7(c) is the same method.", False),
+   ("w3nPQURW5bU", "ROC curve and AUC explained",
+    "PM Expert", "What problem 6.17 is actually plotting.", False),
+ ]),
+]
