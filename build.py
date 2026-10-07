@@ -104,101 +104,122 @@ def wrap(text, budget, first_budget=None):
     return [l.replace("\x00", " ") for l in lines]
 
 
-def expand(blocks):
-    """Turn prose blocks into one block per ruled line."""
-    out = []
+def expand_units(blocks):
+    """Group ruled lines into units the paginator moves as one.
+
+    Each unit: (lines, keep, breakable).
+      keep       never end a sheet on this unit; it needs the start of the next
+      breakable  a long paragraph may split, but leaves at least 2 lines on
+                 each side; units of 3 lines or fewer move whole
+    """
+    units = []
+
+    def add(lines, keep=False, breakable=True):
+        units.append((lines, keep, breakable))
+
+    def blank():
+        if units and units[-1][0] != [("blank",)]:
+            add([("blank",)], breakable=False)
+
     for b in blocks:
         k = b[0]
-        if k in ("stmt", "part"):
-            if k == "part" and out and out[-1][0] != "blank":
-                out.append(("blank",))
-            for ln in wrap(b[1], STMT_CHARS):
-                out.append(("quote", ln))
-            if k == "stmt":
-                out.append(("blank",))
+        if k == "q":
+            blank()
+            add([b], keep=True, breakable=False)
+        elif k == "stmt":
+            add([("quote", ln) for ln in wrap(b[1], STMT_CHARS)])
+            blank()
+        elif k == "part":
+            blank()
+            # a sub-question always stays on the sheet with its answer
+            add([("quote", ln) for ln in wrap(b[1], STMT_CHARS)], keep=True,
+                breakable=False)
         elif k == "ans":
             ls = wrap(b[1], HARD_CHARS - 2, HARD_CHARS - 2 - len(LABEL))
-            out.append(("ansfirst", ls[0]))
-            out.extend(("ln", ln) for ln in ls[1:])
+            lines = [("ansfirst", ls[0])] + [("ln", ln) for ln in ls[1:]]
+            add(lines, keep=ls[-1].rstrip().endswith(":"))
         elif k == "p":
-            out.extend(("ln", ln) for ln in wrap(b[1], HARD_CHARS - 2))
+            ls = wrap(b[1], HARD_CHARS - 2)
+            add([("ln", ln) for ln in ls], keep=ls[-1].rstrip().endswith(":"))
         elif k == "li":
             ls = wrap(b[1], HARD_CHARS - 2 - INDENT_COST["ind2"],
                       HARD_CHARS - 2 - INDENT_COST["ind"])
-            out.append(("ind", ls[0]))
-            out.extend(("ind2", ln) for ln in ls[1:])
-        elif k == "sub":
-            out.append(("sub", b[1]))
-        elif k == "q":
-            if out and out[-1][0] != "blank":
-                out.append(("blank",))
-            out.append(b)
+            add([("ind", ls[0])] + [("ind2", ln) for ln in ls[1:]])
+        elif k in ("sub", "h"):
+            add([b], keep=True, breakable=False)
+        elif k == "blank":
+            blank()
         else:
-            out.append(b)
-    return out
+            add([b], breakable=False)
+    return units
 
 
-def paginate(blocks, per_sheet=LINES_PER_SHEET):
-    """One problem per group, each group spread evenly over its sheets."""
-    groups, cur = [], []
-    for b in blocks:
-        if b[0] == "q" and cur:
-            groups.append(cur)
-            cur = []
-        cur.append(b)
-    if cur:
-        groups.append(cur)
+def expand(blocks):
+    """One block per ruled line, in reading order."""
+    return [ln for u in expand_units(blocks) for ln in u[0]]
 
-    MIN_ROOM = 9    # a new problem only opens a sheet if the page is nearly full
 
-    sheets, sheet, used = [], [], 0
-    for g in groups:
-        total = sum(line_cost(b) for b in g)
-        room = per_sheet - used
-        if sheet and room < MIN_ROOM:
-            while sheet and sheet[-1][0] == "blank":
-                sheet.pop()
-            sheets.append(sheet)
-            sheet, used = [], 0
-            room = per_sheet
-        # spread this problem over however many sheets it needs, counting the
-        # part-filled sheet it is starting on
-        for idx, b in enumerate(g):
-            c = line_cost(b)
-            # a heading, or a line introducing what follows, never ends a sheet
-            if (b[0] in ("sub", "q", "h", "ansfirst")
-                    or (b[0] in ("ln", "quote") and b[1].rstrip().endswith(":"))):
-                nxt = g[idx + 1] if idx + 1 < len(g) else None
-                need = c + (min(line_cost(nxt), 3) if nxt is not None and not atomic(nxt)
-                            else line_cost(nxt) if nxt is not None else 0)
-                if sheet and used + need > per_sheet:
-                    # carry an introducing line down with the heading it introduces
-                    carry = []
-                    while sheet and (sheet[-1][0] in ("ansfirst", "sub")
-                                     or (sheet[-1][0] in ("ln", "quote")
-                                         and sheet[-1][1].rstrip().endswith(":"))):
-                        carry.insert(0, sheet.pop())
-                    while sheet and sheet[-1][0] == "blank":
-                        sheet.pop()
-                    sheets.append(sheet)
-                    sheet = carry
-                    used = sum(line_cost(x) for x in carry)
-            if c > per_sheet:
-                raise BuildError(f"{b[0]!r} needs {c} lines, sheet holds {per_sheet}")
-            if sheet and used + c > per_sheet:
-                while sheet and sheet[-1][0] == "blank":
-                    sheet.pop()
-                    used -= 1
-                sheets.append(sheet)
-                sheet, used = [], 0
-            if not sheet and b[0] == "blank":
-                continue
-            sheet.append(b)
-            used += c
-    if sheet:
+def _cost(lines):
+    return sum(line_cost(x) for x in lines)
+
+
+def _start_need(u):
+    """Lines of unit u that must fit for it to begin on this sheet."""
+    lines, _, breakable = u
+    c = _cost(lines)
+    return min(c, 2) if breakable and len(lines) > 3 else c
+
+
+def paginate(units, per_sheet=LINES_PER_SHEET):
+    MIN_ROOM = 9    # a new problem only opens mid-sheet if this much room is left
+    sheets, sheet = [], []
+
+    def used():
+        return _cost(sheet)
+
+    def close():
+        nonlocal sheet
         while sheet and sheet[-1][0] == "blank":
             sheet.pop()
-        sheets.append(sheet)
+        if sheet:
+            sheets.append(sheet)
+        sheet = []
+
+    for i, u in enumerate(units):
+        lines, keep, breakable = u
+        if lines == [("blank",)] and not sheet:
+            continue
+        if lines[0][0] == "q" and sheet and per_sheet - used() < MIN_ROOM:
+            close()
+        # a chain of keep-units must fit together with the start of what follows
+        need, j = 0, i
+        while j < len(units) and units[j][1]:
+            need += _cost(units[j][0])
+            j += 1
+        need += _start_need(units[j]) if j < len(units) else 0
+        if i == j:
+            need = _start_need(u)
+        if sheet and used() + min(need, per_sheet) > per_sheet:
+            close()
+        if lines == [("blank",)] and not sheet:
+            continue
+        c = _cost(lines)
+        if c > per_sheet:
+            raise BuildError(f"{lines[0][0]!r} needs {c} lines, sheet holds {per_sheet}")
+        if used() + c <= per_sheet:
+            sheet.extend(lines)
+            continue
+        # a long paragraph splits: at least 2 lines here and 2 on the next sheet
+        room = per_sheet - used()
+        cut = min(room, len(lines) - 2)
+        if breakable and len(lines) > 3 and cut >= 2:
+            sheet.extend(lines[:cut])
+            close()
+            sheet.extend(lines[cut:])
+        else:
+            close()
+            sheet.extend(lines)
+    close()
     return sheets
 
 
@@ -329,7 +350,7 @@ def page(path, title, body, navhtml, script="", sheets=0):
 def main():
     blocks = expand(part_a.BLOCKS)
     check_widths(blocks)
-    sheets = paginate(blocks)
+    sheets = paginate(expand_units(part_a.BLOCKS))
     for n, sh in enumerate(sheets, 1):
         used = sum(line_cost(b) for b in sh)
         if used > LINES_PER_SHEET:
