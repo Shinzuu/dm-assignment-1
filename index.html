@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="The exam is Wednesday 7 October. Part B is the revision half — start there. Part A holds the eight assignment solutions as F4 sheets to copy by hand for the 28 October submission.">
+<meta name="description" content="The exam is Wednesday 7 October. Part B is the revision half — start there. Part A holds the eight assignment solutions as F4 sheets to copy by hand for the 28 October submission: problem statement first, then the answer.">
 <meta name="color-scheme" content="light">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>&#9999;</text></svg>">
 <title>Data Mining Assignment-1 — worked solutions</title>
@@ -99,10 +99,10 @@
   .sheet .math{font-family:var(--mono);font-size:.94em}
   .sheet .indent{padding-left:1.6em}
   .sheet .indent2{padding-left:3.2em}
-  /* a near-full line is stretched to the margin so the writing fills the
-     width the way a hand fills a ruled page; short lines stay ragged */
-  .sheet .j{text-align:justify;text-align-last:justify;-moz-text-align-last:justify}
-
+  .sheet .sub{font-weight:600;color:#7A3B12}
+  .sheet b.ans{color:#1E6B3A;font-weight:700}
+  .sheet .q{color:#A8453F;font-size:1.06em}
+  .sheet .h{color:#A8453F}
   .sheet table{border-collapse:collapse;width:100%;font-size:.88em;table-layout:auto}
   .sheet table td,.sheet table th{
     height:calc(var(--pitch) - 1px);line-height:calc(var(--pitch) - 1px);
@@ -110,6 +110,10 @@
     vertical-align:middle;white-space:nowrap;overflow:hidden}
   .sheet table th{font-weight:600;background:#EFF3F7}
   .sheet table td.n,.sheet table th.n{text-align:right;font-family:var(--mono)}
+  .sheet table th{background:#DCE7F3;color:#15203A}
+  .sheet table tr.rok td{background:#E3F2E6}
+  .sheet table tr.rno td{background:#F8E1DF;color:#7A2E28}
+  .sheet table tr.rkey td{background:#FFF1BF;font-weight:600}
 
   .sheet svg.dg{display:block;width:100%;height:100%}
   .sheet svg.dg text{font-family:var(--sans);fill:var(--ink)}
@@ -119,36 +123,57 @@
   .sheet .sheetq{position:absolute;left:calc(var(--marg) + 1.1024em);bottom:1.5748em;
     font:500 .86em/1 var(--mono);color:var(--pencil)}
 
-  .guide{max-width:52rem;margin:1.2rem auto 4rem;padding:2.4rem 2.6rem 3rem;
-         background:var(--paper);border:1px solid var(--line);
-         box-shadow:0 1px 2px rgba(0,0,0,.1),0 10px 28px rgba(0,0,0,.1)}
-  .guide h3{font:600 1.18rem/1.3 var(--serif);margin:2.4rem 0 .7rem;padding-top:.9rem;
-            border-top:1px solid var(--line);scroll-margin-top:4.2rem}
-  .guide h3:first-child{border-top:0;padding-top:0;margin-top:0}
-  .guide p{margin:.7rem 0;max-width:66ch;color:#2C3444}
-  .guide .flag,.guide .warn{padding:.7rem .95rem;border-radius:0 3px 3px 0;margin:1rem 0;max-width:66ch}
-  .guide .flag{background:#FBF0EE;border-left:3px solid var(--margin);color:#4A2320}
-  .guide .warn{background:#FCF6E3;border-left:3px solid #B58A15;color:#4A3B10}
-  .guide .fml{font:500 .95rem/1.7 var(--mono);background:#F1F4F8;color:#1C2740;
-              padding:.55rem .85rem;border-radius:3px;margin:.55rem 0;overflow-x:auto}
-  .guide .work{margin:1.1rem 0;border:1px solid #CBD5E1;border-radius:3px;overflow:hidden}
-  .guide .work figcaption{font:600 .78rem/1 var(--sans);padding:.6rem .9rem;
-                          background:#EDF1F6;color:#1C2740;border-bottom:1px solid #CBD5E1}
-  .guide .work pre{margin:0;padding:.85rem .9rem;overflow-x:auto;background:#F8FAFC;
-                   font:400 .87rem/1.65 var(--mono);color:#1C2740;white-space:pre}
-  .guide .tw{overflow-x:auto;margin:1.1rem 0}
-  .guide table{border-collapse:collapse;width:100%;font-size:.91rem;min-width:28rem}
-  .guide th,.guide td{border:1px solid #CBD5E1;padding:.48rem .66rem;text-align:left;vertical-align:top}
-  .guide th{background:#EDF1F6;font-weight:600;color:#1C2740}
-  .guide td{color:#2C3444}
-  .guide tbody tr:nth-child(even) td{background:#F6F8FB}
-  .toc{display:flex;flex-wrap:wrap;gap:.35rem .45rem;margin:1.1rem 0 0}
-  .toc a{font:500 .76rem/1 var(--mono);color:#51586A;text-decoration:none;
-         border:1px solid var(--line);border-radius:3px;padding:.33rem .48rem;background:var(--paper)}
-  .toc a:hover{color:var(--ink);border-color:var(--margin)}
-  @media (max-width:620px){ .guide{padding:1.5rem 1.15rem 2rem;margin-inline:.6rem}
-                            .guide table{min-width:22rem;font-size:.85rem} }
-
+  .guide{max-width:54rem;margin:1.2rem auto 4rem;padding:0 1rem}
+  .chap{background:var(--paper);border:1px solid var(--line);border-top:5px solid var(--c);
+        box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.08);
+        padding:0 2.4rem 2.4rem;margin:0 0 2rem;scroll-margin-top:4rem}
+  .chap header{margin:0 -2.4rem 1.2rem;padding:1.3rem 2.4rem 1rem;
+               background:color-mix(in srgb,var(--c) 9%,#fff);border-bottom:1px solid var(--line)}
+  .chap header span{font:600 .74rem/1 var(--mono);color:var(--c);letter-spacing:.04em;text-transform:uppercase}
+  .chap header h2{font:600 1.55rem/1.2 var(--serif);margin:.35rem 0 0;color:#15203A}
+  .guide h3{font:600 1.16rem/1.3 var(--serif);margin:2.1rem 0 .6rem;padding-left:.7rem;
+            border-left:4px solid var(--c);color:#15203A;scroll-margin-top:4.2rem}
+  .guide p,.guide li{max-width:68ch;color:#2C3444}
+  .guide p{margin:.65rem 0}
+  .guide ol,.guide ul{padding-left:1.4rem;margin:.6rem 0}
+  .guide li{margin:.35rem 0}
+  .guide strong{color:#15203A}
+  .guide .defs{margin:.9rem 0;border:1px solid #D6DDE6;border-radius:4px;overflow:hidden}
+  .guide .defs div{display:grid;grid-template-columns:minmax(7rem,11rem) 1fr;border-top:1px solid #E3E8EF}
+  .guide .defs div:first-child{border-top:0}
+  .guide .defs dt{font-weight:600;padding:.55rem .75rem;background:color-mix(in srgb,var(--c) 7%,#fff);color:#15203A}
+  .guide .defs dd{margin:0;padding:.55rem .75rem;color:#2C3444}
+  .guide .flag,.guide .warn,.guide .tip{padding:.65rem .95rem;border-radius:0 4px 4px 0;margin:1rem 0;max-width:68ch}
+  .guide .flag{background:#FBEDEB;border-left:4px solid #A8453F;color:#4A2320}
+  .guide .warn{background:#FDF5DC;border-left:4px solid #B58A15;color:#4A3B10}
+  .guide .tip{background:#E8F3EC;border-left:4px solid #2E7A4E;color:#1E3F2B}
+  .guide .fml{font:500 .95rem/1.6 var(--mono);background:#EEF3F9;color:#1C2740;
+              padding:.5rem .85rem;border-radius:4px;margin:.45rem 0;overflow-x:auto;
+              border-left:3px solid #7FA2C8}
+  .guide .work{margin:1.1rem 0;border:1px solid #CBD5E1;border-radius:4px;overflow:hidden}
+  .guide .work figcaption{font:600 .82rem/1.2 var(--sans);padding:.6rem .9rem;
+                          background:color-mix(in srgb,var(--c) 10%,#fff);color:#1C2740;border-bottom:1px solid #CBD5E1}
+  .guide .work pre{margin:0;padding:.85rem .9rem;overflow-x:auto;background:#FAFBFD;
+                   font:400 .86rem/1.65 var(--mono);color:#1C2740;white-space:pre}
+  .guide .tw{overflow-x:auto;margin:1rem 0}
+  .guide table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:26rem}
+  .guide th,.guide td{border:1px solid #CBD5E1;padding:.45rem .64rem;text-align:left;vertical-align:top}
+  .guide th{background:color-mix(in srgb,var(--c) 14%,#fff);font-weight:600;color:#15203A}
+  .guide td{color:#2C3444;background:#fff}
+  .guide tr.rok td{background:#E3F2E6}
+  .guide tr.rno td{background:#F8E1DF;color:#7A2E28}
+  .guide tr.rkey td{background:#FFF1BF;font-weight:600;color:#15203A}
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(11.5rem,1fr));gap:.5rem;margin:1.2rem 0 0}
+  .toc a{display:block;text-decoration:none;color:#15203A;background:var(--paper);
+         border:1px solid var(--line);border-left:4px solid var(--c);border-radius:3px;
+         padding:.55rem .7rem;font:600 .9rem/1.25 var(--sans)}
+  .toc a span{display:block;font:600 .68rem/1.3 var(--mono);color:var(--c);text-transform:uppercase;letter-spacing:.03em}
+  .toc a:hover{box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  @media (max-width:620px){ .chap{padding:0 1.05rem 1.6rem}
+     .chap header{margin:0 -1.05rem 1rem;padding:1rem 1.05rem .8rem}
+     .guide{padding:0 .5rem} .guide table{min-width:20rem;font-size:.84rem}
+     .guide .defs div{grid-template-columns:1fr} }
+  @media print{ .chap{box-shadow:none;break-inside:auto} }
 
   /* ---------------- videos ---------------- */
   .videos{max-width:64rem;margin:0 auto;padding:0 1.25rem 4rem}
@@ -189,10 +214,10 @@
 </head>
 <body>
 <nav class="nav"><div class="in"><a class="home" href="index.html">DM Assignment-1</a><a class="tab" href="part-a.html">Part A &middot; Assignment</a><a class="tab" href="part-b.html">Part B &middot; Revision</a><span class="sp"></span></div></nav>
-<div class="head"><h1>Data Mining Assignment-1 — worked solutions</h1><p class="course">CSE 4333 · Han, Pei &amp; Tong 4th ed. · Chapters 3, 4, 6, 8</p><p>The exam is Wednesday 7 October. Part B is the revision half — start there. Part A holds the eight assignment solutions as F4 sheets to copy by hand for the 28 October submission.</p><dl class="dates"><div><dt>Final exam</dt><dd>Wed 7 October, 2:00–5:00 PM<em>CSE 4333(V4), 3 hours — Chapters 3, 4, 6 and 8, one question from each</em></dd></div><div><dt>Assignment-1 due</dt><dd>28 October<em>handwritten, to the Section Office, 1–2 days' grace</em></dd></div></dl></div><div class="pick"><a href="part-b.html"><p class="when">Exam Wed 7 October</p><h2>Part B &mdash; revision</h2><p>Start here. Ordered by what he named aloud in the 3 October class.</p><ul><li>What he said about the exam</li><li>Hopkins, Silhouette, cluster count</li><li>Worked maths on fresh numbers</li><li>Traps that cost marks</li></ul></a><a href="part-a.html"><p class="when">Due 28 October</p><h2>Part A &mdash; the assignment</h2><p>All eight solutions on 19 F4 sheets, sized to copy by hand one ruled line at a time.</p><ul><li>3.4, 3.5, 3.6 &mdash; schemas and OLAP</li><li>4.6 &mdash; Apriori and FP-growth</li><li>6.7, 6.17 &mdash; trees, Bayes, ROC</li><li>8.2, 8.17 &mdash; k-means and comparison</li></ul></a></div><section class="videos"><h2>Watch first</h2><p>One video per technique, nothing more. If you only have an hour, watch the three marked start here — they are what he named in class. Each opens in a new tab.</p><h3>Clustering evaluation</h3><ul><li><a href="https://www.youtube.com/watch?v=wW1tgWtkj4I" target="_blank" rel="noopener noreferrer">Elbow method and silhouette coefficient</a><span class="first">start here</span><span class="chan">Mahesh Huddar</span><span class="why">Both the topics he named for the exam, worked numerically.</span></li><li><a href="https://www.youtube.com/watch?v=d1qAwe8hthM" target="_blank" rel="noopener noreferrer">Hierarchical clustering, complete linkage</a><span class="first">start here</span><span class="chan">Mahesh Huddar</span><span class="why">Complete linkage, which is the one on your syllabus. Single linkage is not.</span></li><li><a href="https://www.youtube.com/watch?v=FllcPjvztTI" target="_blank" rel="noopener noreferrer">k-means, solved numerical example</a><span class="chan">Mahesh Huddar</span><span class="why">The same shape as problem 8.2.</span></li></ul><h3>Chapter 3 — warehousing and OLAP</h3><ul><li><a href="https://www.youtube.com/watch?v=BLqE2EKiAy4" target="_blank" rel="noopener noreferrer">OLAP operations with a real example</a><span class="first">start here</span><span class="chan">Gate Smashers</span><span class="why">Roll-up, drill-down, slice, dice and pivot. Start here if 3.4(c) made no sense.</span></li><li><a href="https://www.youtube.com/watch?v=ZMPHwpw4Dn4" target="_blank" rel="noopener noreferrer">Star, snowflake and fact constellation schemas</a><span class="chan">AmpCode</span><span class="why">Exactly the three classes problem 3.4(a) asks you to enumerate.</span></li></ul><h3>Chapter 4 — pattern mining</h3><ul><li><a href="https://www.youtube.com/watch?v=C57cQKFJhz8" target="_blank" rel="noopener noreferrer">Apriori, solved example</a><span class="chan">Mahesh Huddar</span><span class="why">Candidate generation and pruning, step by step.</span></li><li><a href="https://www.youtube.com/watch?v=7oGz4PCp9jI" target="_blank" rel="noopener noreferrer">FP-growth, solved example</a><span class="chan">Mahesh Huddar</span><span class="why">Building the FP-tree and mining the conditional pattern bases.</span></li></ul><h3>Chapter 6 — classification</h3><ul><li><a href="https://www.youtube.com/watch?v=y6VwIcZAUkI" target="_blank" rel="noopener noreferrer">Entropy and information gain in a decision tree</a><span class="chan">Mahesh Huddar</span><span class="why">The calculation behind problem 6.7(b).</span></li><li><a href="https://www.youtube.com/watch?v=XzSlEA4ck2I" target="_blank" rel="noopener noreferrer">Naive Bayes, solved example</a><span class="chan">Mahesh Huddar</span><span class="why">The PlayTennis example; 6.7(c) is the same method.</span></li><li><a href="https://www.youtube.com/watch?v=w3nPQURW5bU" target="_blank" rel="noopener noreferrer">ROC curve and AUC explained</a><span class="chan">PM Expert</span><span class="why">What problem 6.17 is actually plotting.</span></li></ul></section>
+<div class="head"><h1>Data Mining Assignment-1 — worked solutions</h1><p class="course">CSE 4333 · Han, Pei &amp; Tong 4th ed. · Chapters 3, 4, 6, 8</p><p>The exam is Wednesday 7 October. Part B is the revision half — start there. Part A holds the eight assignment solutions as F4 sheets to copy by hand for the 28 October submission: problem statement first, then the answer.</p><dl class="dates"><div><dt>Final exam</dt><dd>Wed 7 October, 2:00–5:00 PM<em>CSE 4333(V4), 3 hours — Chapters 3, 4, 6 and 8, one question from each</em></dd></div><div><dt>Assignment-1 due</dt><dd>28 October<em>handwritten, to the Section Office, 1–2 days' grace</em></dd></div></dl></div><div class="pick"><a href="part-b.html"><p class="when">Exam Wed 7 October</p><h2>Part B &mdash; revision</h2><p>Start here. Theory, then the slide examples worked in full, chapter by chapter.</p><ul><li>Ch 3: warehouse, cube, schemas, OLAP operations</li><li>Ch 4: Apriori on the pasta data, rules, closed sets</li><li>Ch 6: information gain, naive Bayes, metrics</li><li>Ch 8: k-means (Manhattan), linkage, Hopkins, silhouette</li></ul></a><a href="part-a.html"><p class="when">Due 28 October</p><h2>Part A &mdash; the assignment</h2><p>All eight solutions on 21 F4 sheets, sized to copy by hand one ruled line at a time.</p><ul><li>3.4, 3.5, 3.6 &mdash; schemas and OLAP</li><li>4.6 &mdash; Apriori and FP-growth</li><li>6.7, 6.17 &mdash; trees, Bayes, ROC</li><li>8.2, 8.17 &mdash; k-means and comparison</li></ul></a></div><section class="videos"><h2>Watch first</h2><p>One video per technique, nothing more. If you only have an hour, watch the three marked start here — they are what he named in class. Each opens in a new tab.</p><h3>Clustering evaluation</h3><ul><li><a href="https://www.youtube.com/watch?v=wW1tgWtkj4I" target="_blank" rel="noopener noreferrer">Elbow method and silhouette coefficient</a><span class="first">start here</span><span class="chan">Mahesh Huddar</span><span class="why">Both the topics he named for the exam, worked numerically.</span></li><li><a href="https://www.youtube.com/watch?v=d1qAwe8hthM" target="_blank" rel="noopener noreferrer">Hierarchical clustering, complete linkage</a><span class="first">start here</span><span class="chan">Mahesh Huddar</span><span class="why">Complete linkage, which is the one on your syllabus. Single linkage is not.</span></li><li><a href="https://www.youtube.com/watch?v=FllcPjvztTI" target="_blank" rel="noopener noreferrer">k-means, solved numerical example</a><span class="chan">Mahesh Huddar</span><span class="why">The same shape as problem 8.2.</span></li></ul><h3>Chapter 3 — warehousing and OLAP</h3><ul><li><a href="https://www.youtube.com/watch?v=BLqE2EKiAy4" target="_blank" rel="noopener noreferrer">OLAP operations with a real example</a><span class="first">start here</span><span class="chan">Gate Smashers</span><span class="why">Roll-up, drill-down, slice, dice and pivot. Start here if 3.4(c) made no sense.</span></li><li><a href="https://www.youtube.com/watch?v=ZMPHwpw4Dn4" target="_blank" rel="noopener noreferrer">Star, snowflake and fact constellation schemas</a><span class="chan">AmpCode</span><span class="why">Exactly the three classes problem 3.4(a) asks you to enumerate.</span></li></ul><h3>Chapter 4 — pattern mining</h3><ul><li><a href="https://www.youtube.com/watch?v=C57cQKFJhz8" target="_blank" rel="noopener noreferrer">Apriori, solved example</a><span class="chan">Mahesh Huddar</span><span class="why">Candidate generation and pruning, step by step.</span></li><li><a href="https://www.youtube.com/watch?v=7oGz4PCp9jI" target="_blank" rel="noopener noreferrer">FP-growth, solved example</a><span class="chan">Mahesh Huddar</span><span class="why">Building the FP-tree and mining the conditional pattern bases.</span></li></ul><h3>Chapter 6 — classification</h3><ul><li><a href="https://www.youtube.com/watch?v=y6VwIcZAUkI" target="_blank" rel="noopener noreferrer">Entropy and information gain in a decision tree</a><span class="chan">Mahesh Huddar</span><span class="why">The calculation behind problem 6.7(b).</span></li><li><a href="https://www.youtube.com/watch?v=XzSlEA4ck2I" target="_blank" rel="noopener noreferrer">Naive Bayes, solved example</a><span class="chan">Mahesh Huddar</span><span class="why">The PlayTennis example; 6.7(c) is the same method.</span></li><li><a href="https://www.youtube.com/watch?v=w3nPQURW5bU" target="_blank" rel="noopener noreferrer">ROC curve and AUC explained</a><span class="chan">PM Expert</span><span class="why">What problem 6.17 is actually plotting.</span></li></ul></section>
 <footer>
   <p>Worked from <em>Data Mining: Concepts and Techniques</em>, Han, Pei &amp; Tong, 4th edition (2022). Problem statements are quoted from the book; every numeric answer was computed independently and re-verified, not taken from a solution manual.</p>
-  <p>Rebuilt 2026-10-05.</p>
+  <p>Rebuilt 2026-10-07.</p>
 </footer>
 
 </body>

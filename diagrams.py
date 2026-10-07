@@ -59,49 +59,56 @@ def _txt(x, y, s, size=2.6, anchor="start", weight="400", style=""):
 # ---------------------------------------------------------------- schemas
 
 def star_doctor():
-    """3.4(b) — star schema on time, doctor, patient."""
+    """3.4(b) - star schema on time, doctor, patient. Every attribute shown."""
     b = [
-        _box(36, 22, 28, 20, "fee", ["time_key", "doctor_id", "patient_id", "count", "charge"], "#F3F7FB"),
-        _box(4, 2, 26, 16, "time", ["time_key", "day", "month", "year"]),
-        _box(70, 2, 26, 16, "doctor", ["doctor_id", "name", "phone", "specialty"]),
-        _box(36, 48, 28, 16, "patient", ["patient_id", "name", "address", "gender"]),
-        _line(30, 14, 40, 24), _line(70, 14, 60, 24), _line(50, 42, 50, 48),
+        _box(36, 16, 28, 0, "fee (fact)",
+             ["time_key", "doctor_id", "patient_id", "count", "charge"], "#E8F0FA"),
+        _box(2, 2, 28, 0, "time",
+             ["time_key", "day", "day_of_week", "month", "quarter", "year"]),
+        _box(70, 16, 28, 0, "doctor",
+             ["doctor_id", "doctor_name", "specialty", "phone", "address"]),
+        _box(2, 32, 28, 0, "patient",
+             ["patient_id", "patient_name", "gender", "phone", "address"]),
+        _line(30, 15, 36, 22), _line(30, 43, 36, 34), _line(70, 27, 64, 27),
     ]
-    return _wrap(64, "".join(b))
+    return _wrap(56, "".join(b))
 
 
 def snowflake_university():
-    """3.5(a) — snowflake schema, dimensions normalised one step out."""
+    """3.5(a) - snowflake schema; student, course and instructor normalised."""
     b = [
-        _box(34, 20, 32, 19, "university",
-             ["student_id, course_id", "semester_id, instructor_id", "count, avg_grade"], "#F3F7FB"),
-        _box(2, 4, 22, 13, "student", ["student_id", "name, major_id"]),
-        _box(2, 42, 22, 11, "major", ["major_id", "major_name"]),
-        _box(76, 4, 22, 13, "course", ["course_id", "name, dept_id"]),
-        _box(76, 42, 22, 11, "department", ["dept_id", "dept_name"]),
-        _box(34, 48, 22, 11, "semester", ["semester_id", "semester, year"]),
-        _box(60, 62, 24, 11, "instructor", ["instructor_id", "name, dept_id"]),
-        _line(24, 12, 34, 24), _line(13, 17, 13, 42),
-        _line(76, 12, 66, 24), _line(87, 17, 87, 42),
-        _line(45, 39, 45, 48),
-        _line(66, 36, 72, 62), _line(84, 53, 78, 62),
+        _box(36, 14, 28, 0, "university (fact)",
+             ["student_id", "course_id", "semester_id", "instructor_id",
+              "count", "avg_grade"], "#E8F0FA"),
+        _box(2, 2, 26, 0, "student", ["student_id", "student_name", "major_id", "status"]),
+        _box(2, 30, 26, 0, "major", ["major_id", "major_name", "university"]),
+        _box(72, 2, 26, 0, "course", ["course_id", "course_name", "dept_id"]),
+        _box(72, 26, 26, 0, "department", ["dept_id", "dept_name", "college"]),
+        _box(36, 48, 28, 0, "semester", ["semester_id", "semester", "year"]),
+        _box(72, 50, 26, 0, "instructor", ["instructor_id", "instr_name", "rank", "dept_id"]),
+        _line(28, 10, 36, 20), _line(15, 21.4, 15, 30),
+        _line(72, 10, 64, 20), _line(85, 18.1, 85, 26),
+        _line(72, 58, 64, 36), _line(85, 50, 85, 42.1),
+        _line(50, 40, 50, 48),
     ]
-    return _wrap(74, "".join(b))
+    return _wrap(70, "".join(b))
 
 
 def star_spectator():
-    """3.6(a) — star schema on date, spectator, location, game."""
+    """3.6(a) - star schema on date, spectator, location, game."""
     b = [
-        _box(36, 24, 28, 20, "sales",
-             ["date_key, game_id", "spectator_id", "location_id", "count, charge"], "#F3F7FB"),
-        _box(2, 2, 26, 16, "date", ["date_key", "day, month", "quarter, year"]),
-        _box(72, 2, 26, 16, "spectator", ["spectator_id", "name, category", "phone"]),
-        _box(2, 50, 26, 16, "location", ["location_id", "name, city", "province"]),
-        _box(72, 50, 26, 16, "game", ["game_id", "name, type", "description"]),
-        _line(28, 14, 38, 26), _line(72, 14, 62, 26),
-        _line(28, 54, 38, 42), _line(72, 54, 62, 42),
+        _box(36, 16, 28, 0, "sales (fact)",
+             ["date_key", "spectator_id", "location_id", "game_id", "count", "charge"], "#E8F0FA"),
+        _box(2, 2, 28, 0, "date", ["date_key", "day", "month", "quarter", "year"]),
+        _box(2, 30, 28, 0, "location",
+             ["location_id", "location_name", "street", "city", "province", "country"]),
+        _box(70, 2, 28, 0, "spectator",
+             ["spectator_id", "spectator_name", "category", "phone", "address"]),
+        _box(70, 30, 28, 0, "game", ["game_id", "game_name", "game_type", "description"]),
+        _line(30, 13, 36, 22), _line(30, 43, 36, 36),
+        _line(70, 13, 64, 22), _line(70, 40, 64, 36),
     ]
-    return _wrap(70, "".join(b))
+    return _wrap(58, "".join(b))
 
 
 # ---------------------------------------------------------------- FP-tree
@@ -171,7 +178,7 @@ def roc_curve():
     X0, Y0, S = 16.0, 56.0, 40.0          # origin and axis length
     def px(fpr): return X0 + fpr * S
     def py(tpr): return Y0 - tpr * S
-    pts = [(0, 0), (0, .2), (.2, .2), (.2, .6), (.4, .6), (.4, .8), (.8, .8), (1, .8), (1, 1)]
+    pts = [(0, 0), (0, .2), (.2, .2), (.2, .4), (.2, .6), (.4, .6), (.4, .8), (.6, .8), (.8, .8), (1, .8), (1, 1)]
     path = " ".join(("M" if i == 0 else "L") + f"{px(a):g},{py(b):g}" for i, (a, b) in enumerate(pts))
     b = [
         _line(X0, Y0, X0 + S, Y0), _line(X0, Y0, X0, Y0 - S),

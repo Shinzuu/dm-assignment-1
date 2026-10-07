@@ -3,13 +3,15 @@
 Course work for **CSE 4333 Data Mining**, Premier University Chittagong.
 Three pages: a welcome that routes you to either half, then:
 
-**Part A** — the eight assigned textbook problems, worked out and paginated
-into 19 F4 answer sheets at 32 ruled lines each, so they can be copied by hand
-one line at a time. Submission is physical copies to the Section Office.
+**Part A** — the eight assigned textbook problems on 21 F4 answer sheets at
+32 ruled lines each, to copy by hand one line at a time. Each problem opens
+with the book's exact statement in blue, then each sub-question and its
+answer. Table rows are coloured: green kept, red pruned, yellow the result.
 
-**Part B** — revision for the final, weighted by what the lecturer flagged in
-the 3 October class. No assignment problem is reused; where a technique
-overlaps, the numbers here are different.
+**Part B** — revision for the final, chapter by chapter: the theory to write
+in words, then the slide examples worked in full (Manhattan k-means, the
+buys_computer tree and naive Bayes, Apriori on the pasta data), plus Hopkins,
+silhouette and complete linkage.
 
 **Live:** https://shinzuu.github.io/dm-assignment-1/
 
@@ -29,8 +31,9 @@ From Han, Pei & Tong, *Data Mining: Concepts and Techniques*, 4th ed. (2022).
 ## Building
 
 ```bash
-python3 build.py   # -> index.html, part-a.html, part-b.html
-python3 check.py   # headless-browser audit of all three, exits 1 on failure
+python3 build.py        # part_a.py + part_b.py -> index.html, part-a.html, part-b.html
+python3 verify_text.py  # wrapping loses no word; statements match the book
+python3 check.py        # headless-browser audit of all three, exits 1 on failure
 ```
 
 `build.py` paginates into sheets and **refuses to build** if a line would be

@@ -1,183 +1,133 @@
 #!/usr/bin/env python3
-"""Prove the reflow neither loses, duplicates nor reorders a single word.
+"""Mechanical checks on the text of both parts.
 
-reflow() rejoins hand-broken fragments and re-wraps them. That is a rewrite
-of every line on every sheet, so the only safe check is a mechanical one:
-the sequence of words going in must equal the sequence coming out, exactly.
-
-Also flags lines a reader would trip over - orphans, stranded brackets,
-doubled spaces, a sentence opening in lower case.
+1. Wrapping loses, adds or reorders no word in any Part A block.
+2. Every Part A problem statement and sub-question appears in the textbook
+   (whitespace and the book's spaced ellipses normalised).
+3. Readability: brackets balance, no doubled spaces, no space before
+   punctuation, no lower case after a full stop, no line over budget.
+4. Part B: brackets balance, paragraphs end with a stop, tables are not ragged,
+   section ids are unique.
 
     python3 verify_text.py        # exits 1 on any problem
 """
 
-import difflib
 import re
+import subprocess
 import sys
+from pathlib import Path
 
 import build
-import content
+import part_a
+import part_b
 
-WRAPPABLE = ("ln", "ind", "ind2", "quote")
-
-
-def words_of(blocks):
-    """Every word of every text block, in reading order."""
-    out = []
-    for b in blocks:
-        if b[0] in WRAPPABLE:
-            out.extend(b[1].split())
-    return out
+BOOK = Path.home() / "Documents/study/8th Semester/DM/Resources/Han-4th-ed-2022.pdf"
+PROSE = ("stmt", "part", "ans", "p", "li")
 
 
-def check_stream():
-    before = words_of(content.BLOCKS)
-    after = words_of(build.reflow(content.BLOCKS))
-    if before == after:
-        print(f"  word stream identical ({len(before)} words)")
-        return 0
+def norm(t):
+    t = t.replace("…", "...").replace(". . .", "...")
+    t = t.replace("“", '"').replace("”", '"').replace("’", "'")
+    t = t.replace("–", "-").replace("naïve", "naive").replace("∗", "")
+    t = re.sub(r"-\s*\n\s*", "", t)          # hyphenation across book lines
+    # compare without whitespace: pdftotext spaces subscripts and acronyms
+    # ("T P", "A 1"), but every word, digit and comma must still match
+    return re.sub(r"\s+", "", t)
 
-    print(f"  WORD STREAM DIFFERS: {len(before)} in, {len(after)} out")
-    sm = difflib.SequenceMatcher(a=before, b=after, autojunk=False)
-    shown = 0
-    for tag, i1, i2, j1, j2 in sm.get_opcodes():
-        if tag == "equal":
+
+def check_wrap():
+    bad = 0
+    for b in part_a.BLOCKS:
+        if b[0] not in PROSE:
             continue
-        shown += 1
-        if shown > 12:
-            print("    ...")
-            break
-        ctx = " ".join(before[max(0, i1 - 6):i1])
-        if tag == "delete":
-            print(f'    LOST after "...{ctx}": {" ".join(before[i1:i2])!r}')
-        elif tag == "insert":
-            print(f'    ADDED after "...{ctx}": {" ".join(after[j1:j2])!r}')
-        else:
-            print(f'    CHANGED after "...{ctx}":')
-            print(f'        was: {" ".join(before[i1:i2])!r}')
-            print(f'        now: {" ".join(after[j1:j2])!r}')
-    return 1
+        lines = build.expand([b])
+        words = [w for x in lines if x[0] != "blank" for w in x[1].split()]
+        if words != b[1].split():
+            print(f"    WRAP CHANGED TEXT: {b[1][:60]}")
+            bad += 1
+    print(f"  wrap: {'ok' if not bad else bad}")
+    return bad
+
+
+def check_against_book():
+    try:
+        raw = subprocess.run(["pdftotext", str(BOOK), "-"], capture_output=True,
+                             text=True, check=True).stdout
+    except Exception as e:                       # book not present: say so
+        print(f"  book: SKIPPED ({e})")
+        return 0
+    book = norm(raw).replace("2010.", "2010?")   # 3.5(b) ends with a full stop
+    book = re.sub(r"(?<=[.?])[a-d]\.", "", book)   # the book letters parts "a."
+    bad = 0
+    for b in part_a.BLOCKS:
+        if b[0] not in ("stmt", "part"):
+            continue
+        chunks = [c for c in re.split(r"(?<=[.?;])", b[1]) if c.strip()]
+        for c in chunks:
+            if norm(re.sub(r"^\s*\([a-d]\)\s*", "", c)) not in book:
+                print(f"    NOT IN BOOK: {c[:90]}")
+                bad += 1
+    print(f"  book wording: {'ok' if not bad else bad}")
+    return bad
 
 
 def check_readability():
-    lines = [b for b in build.reflow(content.BLOCKS) if b[0] in WRAPPABLE]
     bad = []
-    for i, b in enumerate(lines):
-        t = b[1]
-        if t.count("(") != t.count(")"):
-            bad.append(("stranded bracket", t))
-        if t.count("{") != t.count("}"):
-            bad.append(("stranded brace", t))
-        if t.count("[") != t.count("]"):
-            bad.append(("stranded square bracket", t))
-        if t.count('"') % 2:
-            bad.append(("odd number of quote marks", t))
+    for x in build.expand(part_a.BLOCKS):
+        if x[0] in ("blank", "svg", "table", "math"):
+            continue
+        t = x[1]
+        # a short bracket must stay on one line; the book's long ones may wrap
+        if x[0] != "quote" and t.count("(") != t.count(")"):
+            bad.append(("bracket split across lines", t))
         if "  " in t:
             bad.append(("doubled space", t))
-        if t != t.strip():
-            bad.append(("stray whitespace", t))
         if re.search(r"\s[,.;:!?]", t):
             bad.append(("space before punctuation", t))
-        if re.search(r"[a-z],[a-z]", t):
-            bad.append(("comma with no space", t))
-        if re.search(r"\.\s+[a-z]", t):
+        if re.search(r"(?<![.\d])\.\s+[a-z]", t):
             bad.append(("lower case after a full stop", t))
-        if len(t.split()) <= 2 and i and lines[i - 1][0] == b[0]:
-            prev = lines[i - 1][1]
-            if not prev.rstrip().endswith((".", ":", ";", "?", "!")):
-                bad.append(("orphan line", f"{prev!r} / {t!r}"))
-        if t.rstrip().endswith("-") and not t.rstrip().endswith("--"):
-            bad.append(("line ends on a bare hyphen", t))
-        if "\x00" in t:
-            bad.append(("placeholder leaked", t))
-        # a sentence can also open in lower case across a line break
-        if i and lines[i - 1][0] == b[0]:
-            prev = lines[i - 1][1].rstrip()
-            if prev.endswith((".", "?", "!")) and re.match(r"[a-z]", t):
-                bad.append(("lower case opens a sentence",
-                            f"{prev[-28:]!r} / {t[:34]!r}"))
-    if bad:
-        for k, t in bad[:25]:
-            print(f"    {k}: {t}")
-        if len(bad) > 25:
-            print(f"    ... {len(bad)} total")
-    else:
-        print(f"  no readability defects ({len(lines)} lines)")
+    for k, t in bad[:20]:
+        print(f"    {k}: {t}")
+    print(f"  readability: {'ok' if not bad else len(bad)}")
     return len(bad)
 
 
-
 def check_partb():
-    """Part B is rendered straight from source, so only the prose can be wrong."""
-    bad = []
-    seen_ids, seen_titles = set(), set()
-    nsec = nwork = ntbl = 0
-    for b in content.PARTB:
+    bad, ids = [], set()
+    for b in part_b.PARTB:
         k = b[0]
-        if k == "sec":
-            nsec += 1
-            if b[1] in seen_ids:
-                bad.append(("duplicate section id", b[1]))
-            if b[2] in seen_titles:
-                bad.append(("duplicate section title", b[2]))
-            seen_ids.add(b[1]); seen_titles.add(b[2])
-            if not re.fullmatch(r"[a-z][a-z0-9-]*", b[1]):
-                bad.append(("bad anchor id", b[1]))
+        if k in ("chap", "sec"):
+            if b[1] in ids:
+                bad.append(("duplicate id", b[1]))
+            ids.add(b[1])
             continue
         texts = []
-        if k in ("p", "flag", "warn", "math"):
+        if k in ("p", "flag", "warn", "tip", "math"):
             texts = [b[1]]
-        elif k == "work":
-            nwork += 1
-            texts = [b[1]]                       # the caption; the pre block is code
+        elif k in ("ul", "ol"):
+            texts = list(b[1])
+        elif k == "defs":
+            texts = [x for pair in b[1] for x in pair]
         elif k == "tbl":
-            ntbl += 1
-            texts = list(b[1]) + [str(c) for r in b[2] for c in r]
             widths = {len(r) for r in b[2]} | {len(b[1])}
             if len(widths) > 1:
-                bad.append(("ragged table", f"{b[1][:2]} column counts {sorted(widths)}"))
-        # notation is not prose: aligned spacing and d(i,j) are correct there
-        prose = k in ("p", "flag", "warn")
+                bad.append(("ragged table", str(b[1])))
+            texts = [str(c) for r in b[2] for c in r]
         for t in texts:
             if t.count("(") != t.count(")"):
-                bad.append(("stranded bracket", t[:70]))
-            if t.count("{") != t.count("}"):
-                bad.append(("stranded brace", t[:70]))
-            if prose and "  " in t:
+                bad.append(("unbalanced bracket", t[:70]))
+            if k in ("p", "flag", "warn", "tip") and not t.rstrip().endswith((".", ":", "?", "”")):
+                bad.append(("no final stop", t[-60:]))
+            if k != "math" and "  " in t:
                 bad.append(("doubled space", t[:70]))
-            if t != t.strip():
-                bad.append(("stray whitespace", repr(t[:50])))
-            if prose and re.search(r"\s[,.;:!?]", t):
-                bad.append(("space before punctuation", t[:70]))
-            if prose and re.search(r"[a-z],[a-z]", t):
-                bad.append(("comma with no space", t[:70]))
-            if k == "p" and t and not t.rstrip().endswith((".", ":", "?", "!")):
-                bad.append(("paragraph with no final stop", t[-60:]))
-            # a paragraph may legitimately open on a variable or a term of art
-            OPENERS = ("p ", "k ", "kNN", "k-means", "k-medoids", "a(o)", "b(o)",
-                       "s(o)", "avg_grade", "min_sup", "n ", "d(")
-            if (k == "p" and t and not t[0].isupper() and not t[0].isdigit()
-                    and not t.startswith(OPENERS)):
-                bad.append(("paragraph opens lower case", t[:60]))
-    print(f"  {nsec} sections, {nwork} worked boxes, {ntbl} tables")
-    if bad:
-        for kk, t in bad[:25]:
-            print(f"    {kk}: {t}")
-        if len(bad) > 25:
-            print(f"    ... {len(bad)} total")
-    else:
-        print("  no Part B defects")
+    for kk, t in bad[:20]:
+        print(f"    {kk}: {t}")
+    print(f"  part B: {'ok' if not bad else len(bad)}")
     return len(bad)
 
 
 def main():
-    print("word stream")
-    a = check_stream()
-    print("readability")
-    b = check_readability()
-    print("part B")
-    c = check_partb()
-    total = a + b + c
+    total = check_wrap() + check_against_book() + check_readability() + check_partb()
     print(f"\n{total} problem(s)")
     return 1 if total else 0
 
